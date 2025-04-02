@@ -1,11 +1,26 @@
-# Emacs Mac Port
+# Experimental build of Emacs Mac Port
+
+> [!WARNING]
+> This Homebrew tap allows to build experimental build of `emacs-mac` based on the work in
+> https://github.com/jdtsmith/emacs-mac. Bugs are to be expected, so if you find one, please attribute it to
+> appropriate source for example original Emacs, the official Emacs Mac port,the experimental build of Emacs Mac port,
+> or this tap.
+
+## How to use
+
+This Homebrew tap allows for a build of experimental Emacs Mac port from https://github.com/jdtsmith/emacs-mac. The build can be performed in parallel to a build that uses the original Homebrew tap from https://github.com/railwaycat/homebrew-emacsmacport.git. In order to use it some familiarity with building and installing software using Homebrew is expected. A short (and definitely not complete!) instructions:
+
+1. If you have the `emacs-mac` installed from the original tap unlink (or even uninstall) it first, for example., `brew unlink emacs-mac`
+2. Tap this repository: `brew tap pkryger/emacsmacport-exp`
+3. Build and install the formula from `HEAD`, for example `brew install emacs-mac-exp --with-native-compilation --with-natural-title-bar --with-xwidgets`
+4. Please note that this formula installs all artefacts to `${HOMEBREW_PREFIX}/opt/emacs-mac-exp`, so your starting method may require updating  the new location (i.e., `/Applications/Emacs.app` link, shell script).
 
 ## What is this?
 
 The official repository of Emacs Mac port: https://bitbucket.org/mituharu/emacs-mac/overview
 
 This is "Mac port" addition to GNU Emacs. This provides a native GUI
-support for OS X 10.10 - macOS 13. Note that Emacs 23 and later
+support for OS X 10.10 - macOS 15. Note that Emacs 23 and later
 already contain the official GUI support via the NS (Cocoa) port. So
 if it is good enough for you, then you don't need to try this.
 
@@ -90,7 +105,7 @@ Monterey (macOS12).
 ## Useful links ##
 
 * Emacs mac port on [MacPorts](https://www.macports.org/) (not be maintained by the maintainer of this repo):
-  - [emacs-mac-app](https://ports.macports.org/port/emacs-mac-app/)  
+  - [emacs-mac-app](https://ports.macports.org/port/emacs-mac-app/)
   - [emacs-mac-app-devel](https://ports.macports.org/port/emacs-mac-app-devel/)
 
 * Switch meta and option key - https://gist.github.com/3498096
