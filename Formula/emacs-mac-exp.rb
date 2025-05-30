@@ -31,6 +31,12 @@ class EmacsMacExp < Formula
       url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/emacs-mac-29.2-rc-1-multi-tty.diff", using: CopyDownloadStrategy
       sha256 "4ede698c8f8f5509e3abf4e6a9c73e1dc3909b0f52f52ad4c33068bfaed3d1e4"
     end
+    patch do
+      # Introduced in Emacs-30.1. Fix in Emacs-31 but  won't be available in Emacs-30.2
+      # See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=77944
+      url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/0001-Make-man-more-portable.patch", using: CopyDownloadStrategy
+      sha256 "6b4026d63d8d585f6202a5575b4963e225bb9174c8c7f529b54a583cd9500f88"
+    end
   end
 
   option "without-modules", "Build without dynamic modules support"
