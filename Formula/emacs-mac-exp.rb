@@ -206,6 +206,12 @@ class EmacsMacExp < Formula
     if (build.with? "native-comp") || (build.with? "native-compilation")
       ln_sf "#{opt_prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{opt_prefix}/Emacs.app/Contents/native-lisp"
     end
+
+    ["share/emacs/#{emacs_version}/lisp", "share/emacs/#{emacs_version}/etc", "share/info"].each do |path|
+      dir = path.split("/")[-1]
+      ln_sf "#{opt_prefix}/#{path}", "#{opt_prefix}/Emacs.app/Contents/Resources/#{dir}"
+    end
+
     (info/"dir").delete if (info/"dir").exist?
     info.glob("*.info{,.gz}") do |f|
       quiet_system Formula["texinfo"].bin/"install-info", "--quiet", "--info-dir=#{info}", f
