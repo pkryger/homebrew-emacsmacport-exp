@@ -202,8 +202,9 @@ class EmacsMacExp < Formula
   end
 
   def post_install
+    emacs_version = `#{bin}/emacs --version`.lines[0].sub(/^GNU Emacs /, "").chomp
     if (build.with? "native-comp") || (build.with? "native-compilation")
-      ln_sf "#{Dir[opt_prefix/"lib/emacs/*"].first}/native-lisp", "#{opt_prefix}/Emacs.app/Contents/native-lisp"
+      ln_sf "#{opt_prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{opt_prefix}/Emacs.app/Contents/native-lisp"
     end
     (info/"dir").delete if (info/"dir").exist?
     info.glob("*.info{,.gz}") do |f|
