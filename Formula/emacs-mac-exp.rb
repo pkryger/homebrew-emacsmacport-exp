@@ -56,6 +56,8 @@ class EmacsMacExp < Formula
   option "with-xwidgets", "Build with xwidgets"
   option "with-unlimited-select", "Builds with unlimited select, which increases emacs's open file limit to 10000"
 
+  option "debug", "Builds with debug flags, suitable for debugging with lldb"
+
   deprecated_option "keep-ctags" => "with-ctags"
   deprecated_option "icon-official" => "with-official-icon"
   deprecated_option "icon-modern" => "with-modern-icon"
@@ -164,6 +166,11 @@ class EmacsMacExp < Formula
     if build.with? "unlimited-select"
       ENV.append "CFLAGS", "-DFD_SETSIZE=10000"
       ENV.append "CFLAGS", "-DDARWIN_UNLIMITED_SELECT"
+    end
+
+    if build.with? "debug"
+      ENV.append "CFLAGS", "-O0"
+      ENV.append "CFLAGS", "-g3"
     end
 
     icons_dir = buildpath/"mac/Emacs.app/Contents/Resources"
