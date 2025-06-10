@@ -172,7 +172,7 @@ class EmacsMacExp < Formula
     if build.with? "debug"
       ENV.append "CFLAGS", "-O0"
       ENV.append "CFLAGS", "-g3"
-    else if build.with? "optimalization"
+    elsif build.with? "optimalization"
       ENV.append "CFLAGS", "-O3"
       ENV.append "CFLAGS", "-mcpu=native"
     end
