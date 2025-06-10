@@ -56,7 +56,8 @@ class EmacsMacExp < Formula
   option "with-xwidgets", "Build with xwidgets"
   option "with-unlimited-select", "Builds with unlimited select, which increases emacs's open file limit to 10000"
 
-  option "debug", "Builds with debug flags, suitable for debugging with lldb"
+  option "debug", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
+  option "optimalization", "Builds with gcc (llvm) optimalization flags"
 
   deprecated_option "keep-ctags" => "with-ctags"
   deprecated_option "icon-official" => "with-official-icon"
@@ -171,7 +172,7 @@ class EmacsMacExp < Formula
     if build.with? "debug"
       ENV.append "CFLAGS", "-O0"
       ENV.append "CFLAGS", "-g3"
-    else
+    else if build.with? "optimalization"
       ENV.append "CFLAGS", "-O3"
       ENV.append "CFLAGS", "-mcpu=native"
     end
