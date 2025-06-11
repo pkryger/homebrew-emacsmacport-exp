@@ -213,19 +213,19 @@ class EmacsMacExp < Formula
   end
 
   def post_install
-    emacs_version_line = open("#{opt_prefix}/Emacs.app/Contents/Resources/English.lproj/InfoPlist.strings") do |f|
+    emacs_version_line = open('#{prefix}/Emacs.app/Contents/Resources/English.lproj/InfoPlist.strings') do |f|
       f.each_line.detect do |l|
         /^CFBundleShortVersionString *=/.match?(l)
       end
     end
     emacs_version = emacs_version_line.gsub(/CFBundleShortVersionString *= *"([0-9]+(?:\.[0-9]+)+)".*/, "\\1").chomp
     if (build.with? "native-comp") || (build.with? "native-compilation")
-      ln_sf "#{opt_prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{opt_prefix}/Emacs.app/Contents/native-lisp"
+      ln_sf "#{prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{prefix}/Emacs.app/Contents/native-lisp"
     end
 
     ["share/emacs/#{emacs_version}/lisp", "share/emacs/#{emacs_version}/etc", "share/info"].each do |path|
       dir = path.split("/")[-1]
-      ln_sf "#{opt_prefix}/#{path}", "#{opt_prefix}/Emacs.app/Contents/Resources/#{dir}"
+      ln_sf "#{prefix}/#{path}", "#{prefix}/Emacs.app/Contents/Resources/#{dir}"
     end
 
     (info/"dir").delete if (info/"dir").exist?
