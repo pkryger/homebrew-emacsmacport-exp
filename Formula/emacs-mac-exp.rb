@@ -213,7 +213,12 @@ class EmacsMacExp < Formula
   end
 
   def post_install
-    emacs_version = `#{bin}/emacs --version`.lines[0].sub(/^GNU Emacs /, "").chomp
+    emacs_version_line = open("#{opt_prefix}/Emacs.app/Contents/Resources/English.lproj/InfoPlist.strings") do |f|
+      f.each_line.detect do |l|
+        /^CFBundleShortVersionString *=/.match?(l)
+      end
+    end
+    emacs_version = emacs_version_line.gsub(/CFBundleShortVersionString *= *"([0-9]+(?:\.[0-9]+)+)".*/, "\\1").chomp
     if (build.with? "native-comp") || (build.with? "native-compilation")
       ln_sf "#{opt_prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{opt_prefix}/Emacs.app/Contents/native-lisp"
     end
