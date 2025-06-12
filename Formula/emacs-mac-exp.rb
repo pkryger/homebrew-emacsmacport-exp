@@ -194,6 +194,18 @@ class EmacsMacExp < Formula
     system "make", "install"
     prefix.install "NEWS-mac"
 
+    # Create symlinks in Emacs.app. This needs to happen before installing starter, as the latter requires native-lisp
+    # directory in Emacs.app in order to call `emacs --version`.
+    emacs_version = `#{bin}/emacs --version`.lines[0].sub(/^GNU Emacs /, "").chomp
+    contents_dir = prefix/"Emacs.app/Contents"
+    [[lib/"emacs/#{emacs_version}/native-lisp", contents_dir],
+     [share/"emacs/#{emacs_version}/lisp", contents_dir/"Resources"],
+     [share/"emacs/#{emacs_version}/etc", contents_dir/"Resources"],
+     [share/"info", contents_dir/"Resources"],
+     [share/"man", contents_dir/"Resources"]].map do |source, target|
+      target.install_symlink source if !File.exist? target/File.basename(source) and File.exist? source
+    end
+
     # Follow Homebrew and don't install ctags from Emacs. This allows Vim
     # and Emacs and exuberant ctags to play together without violence.
     if build.without? "ctags"
@@ -214,22 +226,6 @@ class EmacsMacExp < Formula
   end
 
   def post_install
-    emacs_version_line = open('#{prefix}/Emacs.app/Contents/Resources/English.lproj/InfoPlist.strings') do |f|
-      f.each_line.detect do |l|
-        /^CFBundleShortVersionString *=/.match?(l)
-      end
-    end
-    emacs_version = emacs_version_line.gsub(/CFBundleShortVersionString *= *"([0-9]+(?:\.[0-9]+)+)".*/, "\\1").chomp
-    if (build.with? "native-comp") || (build.with? "native-compilation")
-      ln_sf "#{prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{prefix}/Emacs.app/Contents/native-lisp"
-    end
-
-    ["share/emacs/#{emacs_version}/lisp", "share/emacs/#{emacs_version}/etc", "share/info",
-     "share/man"].each do |path|
-      dir = path.split("/")[-1]
-      ln_sf "#{prefix}/#{path}", "#{prefix}/Emacs.app/Contents/Resources/#{dir}"
-    end
-
     (info/"dir").delete if (info/"dir").exist?
     info.glob("*.info{,.gz}") do |f|
       quiet_system Formula["texinfo"].bin/"install-info", "--quiet", "--info-dir=#{info}", f
