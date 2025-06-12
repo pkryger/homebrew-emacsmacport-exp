@@ -223,7 +223,8 @@ class EmacsMacExp < Formula
       ln_sf "#{prefix}/lib/emacs/#{emacs_version}/native-lisp", "#{prefix}/Emacs.app/Contents/native-lisp"
     end
 
-    ["share/emacs/#{emacs_version}/lisp", "share/emacs/#{emacs_version}/etc", "share/info"].each do |path|
+    ["share/emacs/#{emacs_version}/lisp", "share/emacs/#{emacs_version}/etc", "share/info",
+     "share/man"].each do |path|
       dir = path.split("/")[-1]
       ln_sf "#{prefix}/#{path}", "#{prefix}/Emacs.app/Contents/Resources/#{dir}"
     end
