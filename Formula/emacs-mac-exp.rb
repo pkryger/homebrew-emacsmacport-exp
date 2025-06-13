@@ -47,7 +47,7 @@ class EmacsMacExp < Formula
   option "with-natural-title-bar",
          "Build with a patch for title bar color inferred by theme (not recommended to use with --HEAD option)"
 
-  option "without-libgccjit", "Build without native compilation"
+  option "without-native-compilation", "Build without native compilation"
   option "with-starter", "Build with a starter script to start emacs GUI from CLI"
   option "with-mac-metal", "use Metal framework in application-side double buffering (experimental)"
   option "with-xwidgets", "Build with xwidgets"
@@ -56,11 +56,11 @@ class EmacsMacExp < Formula
   option "with-debug-flags", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
   option "with-optimalization-flags", "Builds with gcc (llvm) optimalization flags"
 
-  native_comp_desc = "Build with native compilation " \
-                     "(deprecated; native compilation is enabled by default; use --without-ligccjit to disable native compilation)"
-  option "with-native-comp", native_comp_desc
-  option "with-native-compilation", native_comp_desc
-  deprecated_option ["with-native-comp", "with-native-compilation"] => "with-libgccjit"
+  option "with-native-comp", "Build with native compilation " \
+                             "(deprecated; native compilation is enabled by default; use --without-native-compilation to disable it)"
+  deprecated_option "with-native-comp" => "with-native-compilation"
+  deprecated_option "without-native-comp" => "without-native-compilation"
+
   deprecated_option "keep-ctags" => "with-ctags"
   deprecated_option "icon-official" => "with-official-icon"
   deprecated_option "icon-modern" => "with-modern-icon"
@@ -69,10 +69,10 @@ class EmacsMacExp < Formula
   depends_on "autoconf"
   depends_on "automake"
   depends_on "gnutls"
+  depends_on "libgccjit" if build.with? "native-compilation"
   depends_on "pkg-config"
   depends_on "texinfo"
   depends_on "jansson" => :recommended
-  depends_on "libgccjit" => :recommended
   depends_on "librsvg" => :recommended
   depends_on "libxml2" => :recommended
   depends_on "tree-sitter" => :recommended
@@ -146,11 +146,11 @@ class EmacsMacExp < Formula
     args << "--with-modules" if build.with? "modules"
     args << "--with-rsvg" if build.with? "rsvg"
     args << "--with-mac-metal" if build.with? "mac-metal"
-    args << "--without-native-compilation" if build.without? "libgccjit"
+    args << "--without-native-compilation" if build.without? "native-compilation"
     args << "--with-xwidgets" if build.with? "xwidgets"
     args << "--with-tree-sitter" if build.with? "tree-sitter"
 
-    if build.with? "libgccjit"
+    if build.with? "native-compilation"
       gcc_ver = Formula["gcc"].any_installed_version
       gcc_ver_major = gcc_ver.major
       gcc_lib="#{HOMEBREW_PREFIX}/lib/gcc/#{gcc_ver_major}"
