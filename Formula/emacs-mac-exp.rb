@@ -69,12 +69,12 @@ class EmacsMacExp < Formula
   depends_on "pkg-config"
   depends_on "texinfo"
   depends_on "jansson" => :recommended
+  depends_on "librsvg" => :recommended
   depends_on "libxml2" => :recommended
   depends_on "tree-sitter" => :recommended
   depends_on "dbus" => :optional
   depends_on "glib" => :optional
   depends_on "imagemagick" => :optional
-  depends_on "librsvg" => :optional
 
   patch do
     url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/prefer-typo-ascender-descender-linegap.diff", using: CopyDownloadStrategy
