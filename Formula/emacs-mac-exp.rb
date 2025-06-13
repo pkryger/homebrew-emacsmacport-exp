@@ -7,7 +7,7 @@ class CopyDownloadStrategy < AbstractFileDownloadStrategy
 end
 
 class EmacsMacExp < Formula
-  desc "YAMAMOTO Mitsuharu's Mac port of GNU Emacs - jdsmith experimental"
+  desc "YAMAMOTO Mitsuharu's Mac port of GNU Emacs - jdtsmith experimental"
   homepage "https://www.gnu.org/software/emacs/"
   stable do
     url "https://bitbucket.org/mituharu/emacs-mac/get/65c6c96f27afa446df6f9d8eff63f9cc012cc738.tar.gz"
