@@ -47,7 +47,6 @@ class EmacsMacExp < Formula
   option "with-natural-title-bar",
          "Build with a patch for title bar color inferred by theme (not recommended to use with --HEAD option)"
 
-  option "without-native-compilation", "Build without native compilation"
   option "with-starter", "Build with a starter script to start emacs GUI from CLI"
   option "with-mac-metal", "use Metal framework in application-side double buffering (experimental)"
   option "with-xwidgets", "Build with xwidgets"
@@ -56,8 +55,7 @@ class EmacsMacExp < Formula
   option "with-debug-flags", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
   option "with-optimalization-flags", "Builds with gcc (llvm) optimalization flags"
 
-  option "with-native-comp", "Build with native compilation " \
-                             "(deprecated; native compilation is enabled by default; use --without-native-compilation to disable it)"
+  option "without-native-compilation", "Build without native compilation"
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
 
