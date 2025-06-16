@@ -27,6 +27,10 @@ jobs:
         build_opts:
           - ""
           - "--with-natural-title-bar"
+          - "--with-starter"
+          - "--with-optimalization-flags"
+          - "--with-debug-flags"
+          - "--without-native-compilation"
     env:
       HOMEBREW_EMACS_MAC_MODE: local
     steps:
