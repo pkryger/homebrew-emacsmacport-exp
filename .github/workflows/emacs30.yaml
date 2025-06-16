@@ -8,13 +8,13 @@ on:
       - "Formula/emacs-mac-exp@30.rb"
       - "patches/**"
       - "Library/**"
-      - ".github/workflows/emacs30.yml"
+      - ".github/workflows/emacs30.yaml"
   pull_request:
     paths:
       - "Formula/emacs-mac-exp@30.rb"
       - "patches/**"
       - "Library/**"
-      - ".github/workflows/emacs30.yml"
+      - ".github/workflows/emacs30.yaml"
 
 jobs:
   build:
