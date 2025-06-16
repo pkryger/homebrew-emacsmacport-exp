@@ -10,10 +10,13 @@
 
 This Homebrew tap allows for a build of experimental Emacs Mac port from https://github.com/jdtsmith/emacs-mac. The build can be performed in parallel to a build that uses the original Homebrew tap from https://github.com/railwaycat/homebrew-emacsmacport.git. In order to use it some familiarity with building and installing software using Homebrew is expected. A short (and definitely not complete!) instructions:
 
-1. If you have the `emacs-mac` installed from the original tap unlink (or even uninstall) it first, for example., `brew unlink emacs-mac`.
+1. If you have the `emacs-mac` installed from the original tap it is recommended to unlink (or even uninstall) it first, for example., `brew unlink emacs-mac`.
 2. Tap this repository: `brew tap pkryger/emacsmacport-exp`.
-3. Build and install the formula from `HEAD`, for example `brew install emacs-mac-exp --HEAD --with-native-compilation --with-natural-title-bar --with-xwidgets`.
+3. Build and install the formula from `HEAD`, for example `brew install emacs-mac-exp --HEAD --with-optimalization-flags --with-natural-title-bar --with-xwidgets`. If you have chosen to skip unlink/uninstall of `emacs-mac` add `--skip-link`, for example `brew install --skip-link emacs-mac-exp --HEAD ...`.
 4. Please note that this formula installs all artefacts to `${HOMEBREW_PREFIX}/opt/emacs-mac-exp`, so your starting method may require updating the new location (i.e., `/Applications/Emacs.app` link, shell script).
+5. If you wish to experiment, you can try to install Emacs Mac 31 `emacs-mac-exp@31` with `brew intsal --skip-link eamcs-mac-exp@31`.
+
+# Original README.md from Emacs Mac Port
 
 ## What is this?
 
