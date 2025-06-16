@@ -1,44 +1,15 @@
-class CopyDownloadStrategy < AbstractFileDownloadStrategy
-  # Function from https://github.com/d12frosted/homebrew-emacs-plus/blob/c8bb5ccf04f0360c668ade0d71b7a07becd1ddae/Library/EmacsBase.rb#L4
-  def initialize(url, name, version, **meta)
-    super
-    @cached_location = Pathname.new url
-  end
-end
+require_relative "../Library/UrlResolver"
+require_relative "../Library/Icons"
 
-class EmacsMacExp < Formula
+class EmacsMacExpAT30 < Formula
   desc "YAMAMOTO Mitsuharu's Mac port of GNU Emacs - jdtsmith experimental"
   homepage "https://www.gnu.org/software/emacs/"
-  stable do
-    url "https://bitbucket.org/mituharu/emacs-mac/get/65c6c96f27afa446df6f9d8eff63f9cc012cc738.tar.gz"
-    version "emacs-29.1-mac-10.0"
-    sha256 "54d7ba79157c8cb7c3e20be5ce0fbcddd3d5bd0b339b11bc628d7c67a4765b9b"
-    patch do
-      # patch for multi-tty support, see the following links for details
-      # https://bitbucket.org/mituharu/emacs-mac/pull-requests/2/add-multi-tty-support-to-be-on-par-with/diff
-      # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
-      url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/emacs-mac-29-multi-tty.diff", using: CopyDownloadStrategy
-      sha256 "4412ce35689e3caf8e8b1d751bf3641b473cd3aef11889d3ecd682474bf204b0"
-    end
-  end
+
+  @@urlResolver = UrlResolver.new(ENV["HOMEBREW_EMACS_MAC_MODE"] || "remote")
 
   head do
     url "https://github.com/jdtsmith/emacs-mac.git", branch: "emacs-mac-30_1_exp"
-    patch do
-      # patch for multi-tty support, see the following links for details
-      # https://bitbucket.org/mituharu/emacs-mac/pull-requests/2/add-multi-tty-support-to-be-on-par-with/diff
-      # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
-      url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/emacs-mac-29.2-rc-1-multi-tty.diff", using: CopyDownloadStrategy
-      sha256 "4ede698c8f8f5509e3abf4e6a9c73e1dc3909b0f52f52ad4c33068bfaed3d1e4"
-    end
-    patch do
-      # Introduced in Emacs-30.1. Fix in Emacs-31 but  won't be available in Emacs-30.2
-      # See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=77944
-      url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/0001-Make-man-more-portable.patch", using: CopyDownloadStrategy
-      sha256 "6b4026d63d8d585f6202a5575b4963e225bb9174c8c7f529b54a583cd9500f88"
-    end
   end
-
   option "without-modules", "Build without dynamic modules support"
   option "with-ctags", "Don't remove the ctags executable that emacs provides"
   option "with-no-title-bars",
@@ -51,14 +22,12 @@ class EmacsMacExp < Formula
   option "with-mac-metal", "use Metal framework in application-side double buffering (experimental)"
   option "with-xwidgets", "Build with xwidgets"
   option "with-unlimited-select", "Builds with unlimited select, which increases emacs's open file limit to 10000"
-
   option "with-debug-flags", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
   option "with-optimalization-flags", "Builds with gcc (llvm) optimalization flags"
-
   option "without-native-compilation", "Build without native compilation"
+
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
-
   deprecated_option "keep-ctags" => "with-ctags"
   deprecated_option "icon-official" => "with-official-icon"
   deprecated_option "icon-modern" => "with-modern-icon"
@@ -79,39 +48,31 @@ class EmacsMacExp < Formula
   depends_on "imagemagick" => :optional
 
   patch do
-    url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/prefer-typo-ascender-descender-linegap.diff", using: CopyDownloadStrategy
+    # patch for multi-tty support, see the following links for details
+    # https://bitbucket.org/mituharu/emacs-mac/pull-requests/2/add-multi-tty-support-to-be-on-par-with/diff
+    # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
+    url (@@urlResolver.patch_url "emacs-mac-29.2-rc-1-multi-tty"), using: CopyDownloadStrategy
+    sha256 "4ede698c8f8f5509e3abf4e6a9c73e1dc3909b0f52f52ad4c33068bfaed3d1e4"
+  end
+  patch do
+    # Introduced in Emacs-30.1. Fix in Emacs-31 but won't be available in Emacs-30.2
+    # See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=77944
+    url (@@urlResolver.patch_url "emacs-mac-30.1-Make-man-more-portable"), using: CopyDownloadStrategy
+    sha256 "6b4026d63d8d585f6202a5575b4963e225bb9174c8c7f529b54a583cd9500f88"
+  end
+
+  patch do
+    url (@@urlResolver.patch_url "prefer-typo-ascender-descender-linegap"), using: CopyDownloadStrategy
     sha256 "318395d3869d3479da4593360bcb11a5df08b494b995287074d0d744ec562c17"
   end
 
   # icons
-  ICONS_INFO = {
-    "emacs-big-sur-icon"                                  => "e9ec41167c38842a3f6555d3142909211a2aa7e3ff91621b9a576b3847d3b565",
-    "emacs-icons-project-EmacsIcon1"                      => "d66373f0498c203aa6f381ebc2fe2307d50cfab45e1d1956df62659ba8357018",
-    "emacs-icons-project-EmacsIcon2"                      => "3589e6bff9918c9eba006bf835376f686b6d4fc340ef70550979bcf813c8c447",
-    "emacs-icons-project-EmacsIcon3"                      => "0e28424868f51dce1326b9daaf96824606290c2d7fa51bd2340b87420c55a2ca",
-    "emacs-icons-project-EmacsIcon4"                      => "8c5af7b604b622acbdb903e0f49b1292f4ac4704961adebe9a395115e1f31f62",
-    "emacs-icons-project-EmacsIcon5"                      => "6d5fde04b91a1822772ff2eb8c0a2d115ac8bb81d5fef90e7a62824d0f49c710",
-    "emacs-icons-project-EmacsIcon6"                      => "680f4421e62bf212ef43ff0412bb4adbaf4ab3c885a4724cde109bebd772b41a",
-    "emacs-icons-project-EmacsIcon7"                      => "e837cec92b98e2fb9635477f3b124d3a07adee14803f336c1c6ec57ce389b4b6",
-    "emacs-icons-project-EmacsIcon8"                      => "db5931861e8ce5891bbf894786c261287edfe37059801f76c1509503b00a118f",
-    "emacs-icons-project-EmacsIcon9"                      => "1ea513b23e6a36ce2534fe2abe16147c132ddbe78ae54332cc717570c3ecc4bf",
-    "emacs-icons-project-emacs-card-blue-deep"            => "7d97d03311b7b1a0ebd0395887fa5f08c6945066bbf8e214cbe9abc621612707",
-    "emacs-icons-project-emacs-card-british-racing-green" => "da81c5743aa661828669b2bba75dd4f0f6a8c8603a350cdee02c7de454405224",
-    "emacs-icons-project-emacs-card-carmine"              => "535effde04b3f172b5caa810442f6c092aff4a3bf73a65d42e39c0ba68edb41a",
-    "emacs-icons-project-emacs-card-green"                => "40598435e5c442d657cba6ae81cda161aba5d579394ae2fad428a1c2f290d8b8",
-    "emacs-sexy-icon"                                     => "7ab72feeeff0084e14bcb75a3e1040bdf738e0044361e7af8a67ebbaa58d852a",
-    "gnu-head-icon"                                       => "b5899aaa3589b54c6f31aa081daf29d303047aa07b5ca1d0fd7f9333a829b6d3",
-    "modern-icon"                                         => "eb819de2380d3e473329a4a5813fa1b4912ec284146c94f28bd24fbb79f8b2c5",
-    "sjrmanning-icon"                                     => "fc267d801432da90de5c0d2254f6de16557193b6c062ccaae30d91b3ada01ab9",
-    "spacemacs-icon"                                      => "b3db8b7cfa4bc5bce24bc4dc1ede3b752c7186c7b54c09994eab5ec4eaa48900",
-    "retro-sink-bw"                                       => "5cd836f86c8f5e1688d6b59bea4b57c8948026a9640257a7d2ec153ea7200571",
-  }.freeze
-  ICONS_INFO.each do |icon, iconsha|
+  ICONS_INFO_EXP.each do |icon, iconsha|
     option "with-#{icon}", "Using Emacs icon: #{icon}"
     next if build.without? icon
 
     resource icon do
-      url "https://raw.githubusercontent.com/pkryger/homebrew-emacsmacport-exp/f7490351882f685a50fc6c21024a6af70daa8e0d/icons/#{icon}.icns"
+      url (@@urlResolver.icon_url icon), using: CopyDownloadStrategy
       sha256 iconsha
     end
   end
@@ -119,14 +80,14 @@ class EmacsMacExp < Formula
   if build.with? "no-title-bars"
     # odie "--with-no-title-bars patch not supported on --HEAD" if build.head?
     patch do
-      url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/emacs-26.2-rc1-mac-7.5-no-title-bar.patch", using: CopyDownloadStrategy
+      url (@@urlResolver.patch_url "emacs-26.2-rc1-mac-7.5-no-title-bar"), using: CopyDownloadStrategy
       sha256 "8319fd9568037c170f5990f608fb5bd82cd27346d1d605a83ac47d5a82da6066"
     end
   end
 
   if build.with? "natural-title-bar"
     patch do
-      url "#{HOMEBREW_LIBRARY}/Taps/pkryger/homebrew-emacsmacport-exp/patches/emacs-mac-title-bar-9.1.patch", using: CopyDownloadStrategy
+      url (@@urlResolver.patch_url "emacs-mac-title-bar-9.1"), using: CopyDownloadStrategy
       sha256 "297203d750c5c2d9f05aa68f1f47f1bda43419bf1b9ba63f8167625816c3a88d"
     end
   end
@@ -176,7 +137,7 @@ class EmacsMacExp < Formula
     end
 
     icons_dir = buildpath/"mac/Emacs.app/Contents/Resources"
-    ICONS_INFO.each do |icon,|
+    ICONS_INFO_EXP.each do |icon,|
       next if build.without? icon
 
       rm "#{icons_dir}/Emacs.icns"

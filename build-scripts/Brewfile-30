@@ -1,0 +1,8 @@
+brew "autoconf"
+brew "automake"
+brew "gnutls"
+brew "pkg-config"
+brew "texinfo"
+brew "libxml2"
+brew "libyaml"
+brew "tree-sitter"
