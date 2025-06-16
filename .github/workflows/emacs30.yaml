@@ -50,13 +50,15 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - name: Emacs Cache
+        uses: actions/cache@v4
         with:
           key: emacs-${{ steps.get-cache-keys.outputs.EMACS_KEY }}
           path: |
             ~/Library/Caches/Homebrew/emacs-mac-exp@30--git
 
-      - uses: actions/cache@v4
+      - name: Homebrew Cache
+        uses: actions/cache@v4
         with:
           key: homebrew-${{ steps.get-cache-keys.outputs.HOMEBREW_KEY }}
           path: |
