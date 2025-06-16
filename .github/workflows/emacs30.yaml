@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Emacs
-        run: brew install --formula ./Formula/emacs-mac-exp@30.rb ${{ matrix.build_opts }} --verbose
+        run: brew install --formula ./Formula/emacs-mac-exp@30.rb --HEAD ${{ matrix.build_opts }} --verbose
 
       - name: Test Building
         run: $(brew --prefix)/bin/emacs --batch --eval='(print (+ 2 2))'
