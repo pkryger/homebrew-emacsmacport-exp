@@ -36,16 +36,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get Last Commit Hash
-        id: last-commit-hash
+      - name: Get cache keys
+        id: get-cache-keys
         run: |
-          echo EMACS=$(git ls-remote https://github.com/jdtsmith/emacs-mac.git refs/heads/emacs-mac-30_1_exp |  sed -e 's| *refs/heads/emacs-mac-30_1_exp||') >> "$GITHUB_OUTPUT"
+          echo EMACS_KEY=$(git ls-remote https://github.com/jdtsmith/emacs-mac.git refs/heads/emacs-mac-30_1_exp |  sed -e 's| *refs/heads/emacs-mac-30_1_exp||') >> "$GITHUB_OUTPUT"
+          echo HOMEBREW_KEY=$(brew info --json $(brew missing ./Formula/emacs-mac-exp@30.rb) | jq '.[] | (.name, .versions.stable)' | sha256) >> "$GITHUB_OUTPUT"
+          {
+            echo 'HOMEBREW_PATHS<<EOF'
+            for dep in $(brew missing ./Formula/emacs-mac-exp@30.rb); do
+                echo "~/Library/Caches/Homebrew/${dep}-*"
+                echo "~/Library/Caches/Homebrew/downloads/*--${dep}-*"
+            done
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v4
         with:
-          key: emacs-${{ steps.last-commit-hash.outputs.EMACS }}
+          key: emacs-${{ steps.get-cache-keys.outputs.EMACS_KEY }}
           path: |
             ~/Library/Caches/Homebrew/emacs-mac-exp@30--git
+
+      - uses: actions/cache@v4
+        with:
+          key: homebrew-${{ steps.get-cache-keys.outputs.HOMEBREW_KEY }}
+          path: |
+            ${{ steps.get-cache-keys.outputs.HOMEBREW_PATHS }}
 
       - name: Build Emacs
         run: brew install --formula ./Formula/emacs-mac-exp@30.rb --HEAD ${{ matrix.build_opts }} --verbose
