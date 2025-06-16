@@ -25,6 +25,7 @@ jobs:
         os:
           - macos-15
         build_opts:
+          - ""
           - "--with-natural-title-bar"
     env:
       HOMEBREW_EMACS_MAC_MODE: local
