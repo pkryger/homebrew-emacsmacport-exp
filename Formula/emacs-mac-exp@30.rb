@@ -57,7 +57,7 @@ class EmacsMacExpAT30 < Formula
   patch do
     # Introduced in Emacs-30.1. Fix in Emacs-31 but won't be available in Emacs-30.2
     # See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=77944
-    url (@@urlResolver.patch_url "emacs-mac-30.1-Make-man-more-portable"), using: CopyDownloadStrategy
+    url (@@urlResolver.patch_url "emacs-mac-30-Make-man-more-portable"), using: CopyDownloadStrategy
     sha256 "6b4026d63d8d585f6202a5575b4963e225bb9174c8c7f529b54a583cd9500f88"
   end
 
