@@ -59,6 +59,7 @@ jobs:
 
       - name: Homebrew Cache
         uses: actions/cache@v4
+        if: ${{ steps.get-cache-keys.outputs.HOMEBREW_PATHS }}
         with:
           key: homebrew-${{matrix.os}}-${{ steps.get-cache-keys.outputs.HOMEBREW_KEY }}
           path: |
