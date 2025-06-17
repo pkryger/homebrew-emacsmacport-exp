@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - dev
     paths:
       - "Formula/emacs-mac-exp@30.rb"
       - "patches/**"
@@ -40,10 +41,10 @@ jobs:
         id: get-cache-keys
         run: |
           echo EMACS_KEY=$(git ls-remote https://github.com/jdtsmith/emacs-mac.git refs/heads/emacs-mac-30_1_exp |  sed -e 's| *refs/heads/emacs-mac-30_1_exp||') >> "$GITHUB_OUTPUT"
-          echo HOMEBREW_KEY=$(brew info --json $(brew missing ./Formula/emacs-mac-exp@30.rb) | jq '.[] | (.name, .versions.stable)' | sha256) >> "$GITHUB_OUTPUT"
+          echo HOMEBREW_KEY=$(echo $(brew info --json gcc $(brew missing ./Formula/emacs-mac-exp@30.rb) | jq -c '.[] | ({name:.name, version:.versions.stable})') | sort | sha256) >> "$GITHUB_OUTPUT"
           {
             echo 'HOMEBREW_PATHS<<EOF'
-            for dep in $(brew missing ./Formula/emacs-mac-exp@30.rb); do
+            for dep in gcc $(brew missing ./Formula/emacs-mac-exp@30.rb); do
                 echo "~/Library/Caches/Homebrew/${dep}-*"
                 echo "~/Library/Caches/Homebrew/downloads/*--${dep}-*"
             done
