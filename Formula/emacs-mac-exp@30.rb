@@ -56,13 +56,6 @@ class EmacsMacExpAT30 < Formula
   end
 
   patch do
-    # Introduced in Emacs-30.1. Fix in Emacs-31 unlikely to be available in Emacs-30.2
-    # See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=77944
-    url (@@urlResolver.patch_url "emacs-mac-30-Make-man-more-portable"), using: CopyDownloadStrategy
-    sha256 "6b4026d63d8d585f6202a5575b4963e225bb9174c8c7f529b54a583cd9500f88"
-  end
-
-  patch do
     url (@@urlResolver.patch_url "prefer-typo-ascender-descender-linegap"), using: CopyDownloadStrategy
     sha256 "318395d3869d3479da4593360bcb11a5df08b494b995287074d0d744ec562c17"
   end
