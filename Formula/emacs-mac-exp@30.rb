@@ -60,6 +60,11 @@ class EmacsMacExpAT30 < Formula
     sha256 "318395d3869d3479da4593360bcb11a5df08b494b995287074d0d744ec562c17"
   end
 
+  patch do
+    url (@@urlResolver.patch_url "emacs-30-inhibit-lexical-cookie-warning-67916"), using: CopyDownloadStrategy
+    sha256 "5a37a127071db0a500281d13f7feae624ed6a93a2f66a73b565d7d39bdca0a16"
+  end
+
   # icons
   ICONS_INFO_EXP.each do |icon, iconsha|
     option "with-#{icon}", "Using Emacs icon: #{icon}"
