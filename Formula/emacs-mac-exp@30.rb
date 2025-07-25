@@ -65,6 +65,12 @@ class EmacsMacExpAT30 < Formula
     sha256 "5a37a127071db0a500281d13f7feae624ed6a93a2f66a73b565d7d39bdca0a16"
   end
 
+  patch do
+    url (@@urlResolver.patch_url "emacs-29-make-file-notify-call-handler-more-robust-78712"),
+        using: CopyDownloadStrategy
+    sha256 "496c5c058286aea8e13328d1e19425b958dff839a137d14ea2e74c3cf8d66351"
+  end
+
   # icons
   ICONS_INFO_EXP.each do |icon, iconsha|
     option "with-#{icon}", "Using Emacs icon: #{icon}"

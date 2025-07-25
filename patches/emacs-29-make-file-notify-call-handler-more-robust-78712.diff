@@ -1,0 +1,47 @@
+From 81a3e4e51167be51c63eae682331210bc62f7280 Mon Sep 17 00:00:00 2001
+From: Michael Albinus <michael.albinus@gmx.de>
+Date: Wed, 11 Jun 2025 19:20:43 +0200
+Subject: [PATCH] Make file-notify--call-handler more robust
+
+* lisp/filenotify.el (file-notify--call-handler): Make it more
+robust.  (Bug#78712)
+---
+ lisp/filenotify.el | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/lisp/filenotify.el b/lisp/filenotify.el
+index 9acf7651df5..96c2c46d1df 100644
+--- a/lisp/filenotify.el
++++ b/lisp/filenotify.el
+@@ -233,16 +233,18 @@ file-notify--call-handler
+          (and (stringp file1)
+               (string-equal (file-notify--watch-filename watch)
+                             (file-name-nondirectory file1))))
+-    (when file-notify-debug
+-      (message
+-       "file-notify-callback %S %S %S %S %S %S %S"
+-       desc action file file1 watch
+-       (file-notify--watch-absolute-filename watch)
+-       (file-notify--watch-directory watch)))
+-    (funcall (file-notify--watch-callback watch)
+-             (if file1
+-                 (list desc action file file1)
+-               (list desc action file)))))
++    ;; The callback could have removed in `file-notify--rm-descriptor'.
++    (when (file-notify--watch-callback watch)
++      (when file-notify-debug
++        (message
++         "file-notify-callback %S %S %S %S %S %S %S"
++         desc action file file1 watch
++         (file-notify--watch-absolute-filename watch)
++         (file-notify--watch-directory watch)))
++      (funcall (file-notify--watch-callback watch)
++               (if file1
++                   (list desc action file file1)
++                 (list desc action file))))))
+ 
+ (defun file-notify--handle-event (desc actions file file1-or-cookie)
+   "Handle an event returned from file notification.
+-- 
+2.50.1
+
