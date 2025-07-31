@@ -97,6 +97,13 @@ class EmacsMacExpAT30 < Formula
     end
   end
 
+  def get_emacs_version
+    ac_init_match=`m4 configure.ac`.match(/AC_INIT\(([^\)]+)\)/)
+    version_arg=ac_init_match ? ac_init_match[1].split(",")[1] : nil
+    version_match=version_arg ? version_arg.match(/([0-9.]+)/) : nil
+    version_match ? version_match[1] :`#{bin}/emacs --version`.lines[0].sub(/^GNU Emacs /, "").chomp
+  end
+
   def install
     args = [
       "--enable-locallisppath=#{HOMEBREW_PREFIX}/share/emacs/site-lisp",
@@ -159,7 +166,7 @@ class EmacsMacExpAT30 < Formula
 
     # Create symlinks in Emacs.app. This needs to happen before installing starter, as the latter requires native-lisp
     # directory in Emacs.app in order to call `emacs --version`.
-    emacs_version = `#{bin}/emacs --version`.lines[0].sub(/^GNU Emacs /, "").chomp
+    emacs_version = get_emacs_version
     contents_dir = prefix/"Emacs.app/Contents"
     [[lib/"emacs/#{emacs_version}/native-lisp", contents_dir],
      [share/"emacs/#{emacs_version}/lisp", contents_dir/"Resources"],
