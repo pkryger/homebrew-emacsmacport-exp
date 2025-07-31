@@ -8,7 +8,14 @@ class EmacsMacExpAT31 < Formula
   @@urlResolver = UrlResolver.new(ENV["HOMEBREW_EMACS_MAC_MODE"] || "remote")
 
   head do
-    url "https://github.com/jdtsmith/emacs-mac.git", branch: "emacs-mac-gnu_master_exp"
+    url "https://github.com/jdtsmith/emacs-mac.git",
+        **(
+          if ENV["HOMEBREW_EMACS_MAC_31_REVISION"]
+            { revision: ENV["HOMEBREW_EMACS_MAC_30_REVISION"] }
+          else
+            { branch: "emacs-mac-gnu_master_exp" }
+          end
+        )
   end
   option "without-modules", "Build without dynamic modules support"
   option "with-no-title-bars",

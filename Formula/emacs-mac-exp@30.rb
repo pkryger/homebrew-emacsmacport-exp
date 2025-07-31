@@ -8,7 +8,14 @@ class EmacsMacExpAT30 < Formula
   @@urlResolver = UrlResolver.new(ENV["HOMEBREW_EMACS_MAC_MODE"] || "remote")
 
   head do
-    url "https://github.com/jdtsmith/emacs-mac.git", branch: "emacs-mac-30_1_exp"
+    url "https://github.com/jdtsmith/emacs-mac.git",
+        **(
+          if ENV["HOMEBREW_EMACS_MAC_30_REVISION"]
+            { revision: ENV["HOMEBREW_EMACS_MAC_30_REVISION"] }
+          else
+            { branch: "emacs-mac-30_1_exp" }
+          end
+        )
   end
   option "without-modules", "Build without dynamic modules support"
   option "with-ctags", "Don't remove the ctags executable that emacs provides"
