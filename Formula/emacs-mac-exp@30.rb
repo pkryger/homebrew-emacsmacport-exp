@@ -110,7 +110,7 @@ class EmacsMacExpAT30 < Formula
   end
 
   def get_emacs_version
-    ac_init_match=`m4 configure.ac`.match(/AC_INIT\(([^\)]+)\)/)
+    ac_init_match=`m4 #{buildpath}/configure.ac`.match(/AC_INIT\(([^\)]+)\)/)
     version_arg=ac_init_match ? ac_init_match[1].split(",")[1] : nil
     version_match=version_arg ? version_arg.match(/([0-9.]+)/) : nil
     version_match ? version_match[1] : `#{bin}/emacs --version`.lines[0].sub(/^GNU Emacs /, "").chomp
