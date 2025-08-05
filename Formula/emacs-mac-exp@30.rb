@@ -152,7 +152,7 @@ class EmacsMacExpAT30 < Formula
     end
 
     if build.with? "debug-flags"
-      ENV.append "CFLAGS", "-O0" unless build.with? "optimalization-flags"
+      ENV.append "CFLAGS", "-Og" unless build.with? "optimalization-flags"
       ENV.append "CFLAGS", "-g3"
     end
     if build.with? "optimalization-flags"
