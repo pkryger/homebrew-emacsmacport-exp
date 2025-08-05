@@ -32,6 +32,7 @@ class EmacsMacExpAT30 < Formula
   option "with-debug-flags", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
   option "with-optimalization-flags", "Builds with gcc (llvm) optimalization flags"
   option "without-native-compilation", "Build without native compilation"
+  option "with-homebrew-llvm", "Build using Homebrew's LLVM (introduced to enable NOESCAPE blocks)"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -40,6 +41,7 @@ class EmacsMacExpAT30 < Formula
   deprecated_option "icon-modern" => "with-modern-icon"
 
   depends_on "gcc" => :build if build.with? "native-compilation"
+  depends_on "llvm" => :build if build.with? "native-compilation" and build.with? "homebrew-llvm"
   depends_on "autoconf"
   depends_on "automake"
   depends_on "gnutls"
@@ -136,14 +138,16 @@ class EmacsMacExpAT30 < Formula
     if build.with? "native-compilation"
       gcc_ver = Formula["gcc"].any_installed_version
       gcc_ver_major = gcc_ver.major
-      gcc_lib="#{HOMEBREW_PREFIX}/lib/gcc/#{gcc_ver_major}"
+      ENV.append_to_cflags "-I#{Formula["libgccjit"].include}"
+      ENV.append "LDFLAGS", "-L#{Formula["libgccjit"].lib}/gcc/#{gcc_ver_major}"
 
-      ENV.append "CFLAGS", "-I#{Formula["gcc"].include}"
-      ENV.append "CFLAGS", "-I#{Formula["libgccjit"].include}"
-
-      ENV.append "LDFLAGS", "-L#{gcc_lib}"
-      ENV.append "LDFLAGS", "-I#{Formula["gcc"].include}"
-      ENV.append "LDFLAGS", "-I#{Formula["libgccjit"].include}"
+      if build.with? "homebrew-llvm"
+        ENV["CC"] = ENV["OBJC"] = "#{Formula["llvm"].opt_bin}/clang"
+        ENV["CXX"] = ENV["OBJCXX"] = "#{Formula["llvm"].opt_bin}/clang++"
+      else
+        ENV.append_to_cflags "-I#{Formula["gcc"].include}"
+        ENV.append "LDFLAGS", "-L#{HOMEBREW_PREFIX}/lib/gcc/#{gcc_ver_major}"
+      end
     end
 
     if build.with? "unlimited-select"
