@@ -32,6 +32,7 @@ class EmacsMacExpAT31 < Formula
   option "with-optimalization-flags", "Builds with gcc (llvm) optimalization flags"
   option "without-native-compilation", "Build without native compilation"
   option "with-homebrew-llvm", "Build using Homebrew's LLVM (introduced to enable NOESCAPE blocks)"
+  option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -150,6 +151,8 @@ class EmacsMacExpAT31 < Formula
       ENV.append "CFLAGS", "-O3"
       ENV.append "CFLAGS", "-mcpu=native"
     end
+
+    ENV.append_to_cflags "-fobjc-arc" if build.with? "arc"
 
     icons_dir = buildpath/"mac/Emacs.app/Contents/Resources"
     ICONS_INFO_EXP.each do |icon,|

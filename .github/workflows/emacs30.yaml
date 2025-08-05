@@ -31,6 +31,7 @@ jobs:
           - "--with-starter"
           - "--with-optimalization-flags"
           - "--with-debug-flags"
+          - "--with-arc"
           - "--without-native-compilation"
     env:
       HOMEBREW_EMACS_MAC_MODE: local
