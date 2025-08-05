@@ -1,0 +1,160 @@
+From 206f2292616755ffdc505c45f31545c49695d62b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Przemys=C5=82aw=20Kryger?= <pkryger@gmail.com>
+Date: Mon, 4 Aug 2025 14:09:45 +0100
+Subject: [PATCH] fix: Remove excessive CF_NOESCAPE and CS_NOESCAPE
+
+Analysed all occurrences of CF_NOESCAPE and NS_NOESCAPE and removed
+where the annotation seemed to be excessive, for example when the
+annotated block has been enqueued in a queue to execute in another loop.
+
+Such a block, may have a an optimised placement as
+`NSConcreteGlobalBlock` on stack on a callee side. This happen on
+non-Apple clang Apple at least in version 7 (see [1]).
+
+This is slightly different than fully disabling the blocks (see [2],
+[3], and [4]), while trying to preserve as much of the NOESCAPES where
+it seems to server a purpose.
+
+* src/macappkit.m (mac_within_gui, mac_within_lisp,
+  mac_within_gui_and_here, mac_within_gui_allowing_inner_lisp): Remove
+  excessive CF_NOESCAPE, for blocks that are passed and executed in
+  other threads.
+* src/macterm.h (mac_within_gui) : Remove excessive CF_NOESCAPE, for
+  blocks that are passed and executed in other threads.
+* src/macappkit.h (enumerateChildWindowsUsingBlock): Harmonise
+  NS_NOESCAPE placement.
+* src/macappkit.m (enumerateChildWindowsUsingBlock): Harmonise
+  CF_NOESCAPE placement.
+
+[1] https://github.com/NixOS/nixpkgs/issues/127902#issuecomment-1698365843
+[2] https://github.com/jdtsmith/emacs-mac/issues/43
+[3] https://github.com/jdtsmith/emacs-mac/pull/48
+[4] https://github.com/jdtsmith/emacs-mac/issues/69
+---
+ src/macappkit.h |  4 ++--
+ src/macappkit.m | 24 ++++++++++++------------
+ src/macterm.h   |  2 +-
+ src/nsxwidget.m |  2 +-
+ 4 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/src/macappkit.h b/src/macappkit.h
+index 1b0100c4bf5..e371f4c1224 100644
+--- a/src/macappkit.h
++++ b/src/macappkit.h
+@@ -508,8 +508,8 @@ typedef NSInteger NSGlyphProperty;
+ @interface NSWindow (Emacs)
+ - (Lisp_Object)lispFrame;
+ - (NSWindow *)topLevelWindow;
+-- (void)enumerateChildWindowsUsingBlock:(NS_NOESCAPE void
+-					 (^)(NSWindow *child, BOOL *stop))block;
++- (void)enumerateChildWindowsUsingBlock:(void
++					 (NS_NOESCAPE ^)(NSWindow *child, BOOL *stop))block;
+ @end
+ 
+ @interface NSCursor (Emacs)
+diff --git a/src/macappkit.m b/src/macappkit.m
+index ce758092dd1..234d02d70cd 100644
+--- a/src/macappkit.m
++++ b/src/macappkit.m
+@@ -109,10 +109,10 @@
+   (@"NSTouchBarItemIdentifierCandidateList")
+ #endif
+ 
+-static void mac_within_gui_and_here (void (^ CF_NOESCAPE) (void),
+-				     void (^ CF_NOESCAPE) (void));
+-static void mac_within_gui_allowing_inner_lisp (void (^ CF_NOESCAPE) (void));
+-static void mac_within_lisp (void (^ CF_NOESCAPE) (void));
++static void mac_within_gui_and_here (void (^) (void),
++                                     void (CF_NOESCAPE ^) (void));
++static void mac_within_gui_allowing_inner_lisp (void (^) (void));
++static void mac_within_lisp (void (^) (void));
+ static void mac_within_lisp_deferred_unless_popup (void (^) (void));
+ 
+ #define MAC_SELECT_ALLOW_LISP_EVALUATION 1
+@@ -627,8 +627,8 @@ - (NSWindow *)topLevelWindow
+    descendant windows.  Set *stop to YES in the block to abort further
+    processing of the child windows subtree.  */
+ 
+-- (void)enumerateChildWindowsUsingBlock:(NS_NOESCAPE void
+-					 (^)(NSWindow *child, BOOL *stop))block
++- (void)enumerateChildWindowsUsingBlock:(void
++					 (NS_NOESCAPE ^)(NSWindow *child, BOOL *stop))block
+ {
+   for (NSWindow *childWindow in self.childWindows)
+     {
+@@ -1017,7 +1017,7 @@ - (void)orderOut:(id)sender
+ 
+ static void
+ mac_with_current_drawing_appearance (NSAppearance *appearance,
+-				     void (NS_NOESCAPE ^block) (void))
++                                     void (NS_NOESCAPE ^block) (void))
+ {
+   if (
+ #if __clang_major__ >= 9
+@@ -16647,7 +16647,7 @@ - (void)sound:(NSSound *)sound didFinishPlaying:(BOOL)finishedPlaying
+    they are retained for non-ARC environments.  */
+ 
+ void
+-mac_within_gui (void (^ CF_NOESCAPE block) (void))
++mac_within_gui (void (^block) (void))
+ {
+   mac_within_gui_and_here (block, NULL);
+ }
+@@ -16658,8 +16658,8 @@ - (void)sound:(NSSound *)sound didFinishPlaying:(BOOL)finishedPlaying
+    returns when the both executions has finished.  */
+ 
+ static void
+-mac_within_gui_and_here (void (^ CF_NOESCAPE block_gui) (void),
+-			 void (^ CF_NOESCAPE block_here) (void))
++mac_within_gui_and_here (void (^block_gui) (void),
++                         void (CF_NOESCAPE ^block_here) (void))
+ {
+   eassert (!pthread_main_np ());
+   eassert (mac_gui_queue.count <= 1);
+@@ -16694,7 +16694,7 @@ - (void)sound:(NSSound *)sound didFinishPlaying:(BOOL)finishedPlaying
+    must not be the GUI thread.  */
+ 
+ static void
+-mac_within_gui_allowing_inner_lisp (void (^ CF_NOESCAPE block) (void))
++mac_within_gui_allowing_inner_lisp (void (^block) (void))
+ {
+   eassert (!pthread_main_np ());
+   bool __block completed_p = false;
+@@ -16720,7 +16720,7 @@ - (void)sound:(NSSound *)sound didFinishPlaying:(BOOL)finishedPlaying
+    etc. in the context of BLOCK.  */
+ 
+ static void
+-mac_within_lisp (void (^ CF_NOESCAPE block) (void))
++mac_within_lisp (void (^block) (void))
+ {
+   eassert (pthread_main_np ());
+   eassert (mac_lisp_queue.count == 0);
+diff --git a/src/macterm.h b/src/macterm.h
+index 5d987c3af9a..12d7f62e91a 100644
+--- a/src/macterm.h
++++ b/src/macterm.h
+@@ -753,7 +753,7 @@ extern void mac_update_accessibility_status (struct frame *);
+ extern void mac_start_animation (Lisp_Object, Lisp_Object);
+ extern CFTypeRef mac_sound_create (Lisp_Object, Lisp_Object);
+ extern void mac_sound_play (CFTypeRef, Lisp_Object, Lisp_Object);
+-extern void mac_within_gui (void (^ CF_NOESCAPE block) (void));
++extern void mac_within_gui (void (^block) (void));
+ 
+ #if DRAWING_USE_GCD
+ #define MAC_BEGIN_DRAW_TO_FRAME(f, gc, rect, context)			\
+diff --git a/src/nsxwidget.m b/src/nsxwidget.m
+index dfed05e5cb9..a4c0ec5e1f8 100644
+--- a/src/nsxwidget.m
++++ b/src/nsxwidget.m
+@@ -368,7 +368,7 @@ - (void) userContentController:(WKUserContentController *)userContentController
+ 
+ #ifdef HAVE_MACGUI
+ static void
+-mac_within_gui_check_thread (void (^ CF_NOESCAPE block) (void))
++mac_within_gui_check_thread (void (^block) (void))
+ {
+   if (!pthread_main_np ())
+     mac_within_gui (block);
+-- 
+2.50.1
+
