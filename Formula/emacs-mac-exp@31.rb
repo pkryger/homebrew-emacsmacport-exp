@@ -144,12 +144,18 @@ class EmacsMacExpAT31 < Formula
     end
 
     if build.with? "debug-flags"
-      ENV.append "CFLAGS", "-Og" unless build.with? "optimalization-flags"
-      ENV.append "CFLAGS", "-g3"
+      unless build.with? "optimalization-flags"
+        ENV.append_to_cflags "-O0"
+        ENV.O0
+      end
+      ENV.append_to_cflags "-g3"
+      ENV.set_debug_symbols
     end
     if build.with? "optimalization-flags"
-      ENV.append "CFLAGS", "-O3"
-      ENV.append "CFLAGS", "-mcpu=native"
+      ENV.append_to_cflags "-O3"
+      ENV.O3
+      ENV.append_to_cflags "-mcpu=native"
+      ENV.runtime_cpu_detection
     end
 
     ENV.append_to_cflags "-fobjc-arc" if build.with? "arc"
