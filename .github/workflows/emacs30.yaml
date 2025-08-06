@@ -32,6 +32,7 @@ jobs:
           - "--with-optimalization-flags"
           - "--with-debug-flags"
           - "--with-arc"
+          - "--with-homebrew-llvm"
           - "--without-native-compilation"
     env:
       HOMEBREW_EMACS_MAC_MODE: local
