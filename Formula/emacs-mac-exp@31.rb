@@ -139,8 +139,8 @@ class EmacsMacExpAT31 < Formula
     end
 
     if build.with? "unlimited-select"
-      ENV.append "CFLAGS", "-DFD_SETSIZE=10000"
-      ENV.append "CFLAGS", "-DDARWIN_UNLIMITED_SELECT"
+      ENV.append_to_cflags "-DFD_SETSIZE=10000"
+      ENV.append_to_cflags "-DDARWIN_UNLIMITED_SELECT"
     end
 
     if build.with? "debug-flags"
