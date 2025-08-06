@@ -32,7 +32,7 @@ jobs:
           - "--with-optimization-flags"
           - "--with-debug-flags"
           - "--with-arc"
-          - "--with-homebrew-llvm"
+          - "--cc llvm_clang"
           - "--without-native-compilation"
     env:
       HOMEBREW_EMACS_MAC_MODE: local
@@ -43,7 +43,7 @@ jobs:
         id: get-cache-keys
         run: |
           echo EMACS_KEY=$(git ls-remote https://github.com/jdtsmith/emacs-mac.git refs/heads/emacs-mac-gnu_master_exp |  sed -e 's| *refs/heads/emacs-mac-gnu_master_exp||') >> "$GITHUB_OUTPUT"
-          echo HOMEBREW_KEY=$(echo $(brew info --json gcc $(brew missing ./Formula/emacs-mac-exp@31.rb) | jq -c '.[] | ({name:.name, version:.versions.stable})') | sort | sha256) >> "$GITHUB_OUTPUT"
+          echo HOMEBREW_KEY=$(echo $(brew info --json gcc llvm $(brew missing ./Formula/emacs-mac-exp@31.rb) | jq -c '.[] | ({name:.name, version:.versions.stable})') | sort | sha256) >> "$GITHUB_OUTPUT"
           {
             echo 'HOMEBREW_PATHS<<EOF'
             for dep in gcc $(brew missing ./Formula/emacs-mac-exp@31.rb); do
@@ -67,6 +67,9 @@ jobs:
           key: homebrew-${{matrix.os}}-${{ steps.get-cache-keys.outputs.HOMEBREW_KEY }}
           path: |
             ${{ steps.get-cache-keys.outputs.HOMEBREW_PATHS }}
+
+      - name: Install LLVM
+        run: brew install llvm
 
       - name: Build Emacs
         run: brew install --formula ./Formula/emacs-mac-exp@31.rb --HEAD ${{ matrix.build_opts }} --verbose
