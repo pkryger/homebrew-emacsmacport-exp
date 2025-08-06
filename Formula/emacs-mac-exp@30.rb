@@ -30,7 +30,7 @@ class EmacsMacExpAT30 < Formula
   option "with-xwidgets", "Build with xwidgets"
   option "with-unlimited-select", "Builds with unlimited select, which increases emacs's open file limit to 10000"
   option "with-debug-flags", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
-  option "with-optimalization-flags", "Builds with gcc (llvm) optimalization flags"
+  option "with-optimization-flags", "Builds with gcc (llvm) optimization flags"
   option "without-native-compilation", "Build without native compilation"
   option "with-homebrew-llvm", "Build using Homebrew's LLVM (introduced to enable NOESCAPE blocks)"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
@@ -157,14 +157,14 @@ class EmacsMacExpAT30 < Formula
     end
 
     if build.with? "debug-flags"
-      unless build.with? "optimalization-flags"
+      unless build.with? "optimization-flags"
         ENV.append_to_cflags "-O0"
         ENV.O0
       end
       ENV.append_to_cflags "-g3"
       ENV.set_debug_symbols
     end
-    if build.with? "optimalization-flags"
+    if build.with? "optimization-flags"
       ENV.append_to_cflags "-O3"
       ENV.O3
       ENV.append_to_cflags "-mcpu=native"
