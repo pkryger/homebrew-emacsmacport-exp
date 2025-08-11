@@ -79,11 +79,6 @@ class EmacsMacExpAT30 < Formula
     sha256 "496c5c058286aea8e13328d1e19425b958dff839a137d14ea2e74c3cf8d66351"
   end
 
-  patch do
-    url (@@urlResolver.patch_url "emacs-mac-29-suppress-noescape"), using: CopyDownloadStrategy
-    sha256 "36740bcc4783ad12b155ed4d58682fc1803e9a6bcb6f9d5dbb89a94a8a1830d8"
-  end
-
   # icons
   ICONS_INFO_EXP.each do |icon, iconsha|
     option "with-#{icon}", "Using Emacs icon: #{icon}"
