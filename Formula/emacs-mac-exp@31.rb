@@ -66,11 +66,6 @@ class EmacsMacExpAT31 < Formula
     sha256 "318395d3869d3479da4593360bcb11a5df08b494b995287074d0d744ec562c17"
   end
 
-  patch do
-    url (@@urlResolver.patch_url "emacs-mac-31-restore-noescape"), using: CopyDownloadStrategy
-    sha256 "c55d49a3d2ec22e99a598c174e107fb79207d5238969f4cf26ea6448d48fd2ac"
-  end
-
   # icons
   ICONS_INFO_EXP.each do |icon, iconsha|
     option "with-#{icon}", "Using Emacs icon: #{icon}"
