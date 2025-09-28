@@ -22,9 +22,6 @@ class EmacsMacExpAT30 < Formula
   option "with-no-title-bars",
          "Build with a patch for no title bars on frames (not recommended to use with --HEAD option)"
 
-  option "with-natural-title-bar",
-         "Build with a patch for title bar color inferred by theme (not recommended to use with --HEAD option)"
-
   option "with-starter", "Build with a starter script to start emacs GUI from CLI"
   option "with-mac-metal", "use Metal framework in application-side double buffering (experimental)"
   option "with-xwidgets", "Build with xwidgets"
@@ -95,13 +92,6 @@ class EmacsMacExpAT30 < Formula
     patch do
       url (@@urlResolver.patch_url "emacs-26.2-rc1-mac-7.5-no-title-bar"), using: CopyDownloadStrategy
       sha256 "8319fd9568037c170f5990f608fb5bd82cd27346d1d605a83ac47d5a82da6066"
-    end
-  end
-
-  if build.with? "natural-title-bar"
-    patch do
-      url (@@urlResolver.patch_url "emacs-mac-title-bar-9.1"), using: CopyDownloadStrategy
-      sha256 "297203d750c5c2d9f05aa68f1f47f1bda43419bf1b9ba63f8167625816c3a88d"
     end
   end
 
