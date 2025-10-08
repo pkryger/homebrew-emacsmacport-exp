@@ -21,6 +21,7 @@ class EmacsMacExpAT30 < Formula
   option "with-ctags", "Don't remove the ctags executable that emacs provides"
   option "with-no-title-bars",
          "Build with a patch for no title bars on frames (not recommended to use with --HEAD option)"
+  option "with-transparent-titlebar", "Build with a transparent titlebar support"
 
   option "with-starter", "Build with a starter script to start emacs GUI from CLI"
   option "with-mac-metal", "use Metal framework in application-side double buffering (experimental)"
@@ -92,6 +93,13 @@ class EmacsMacExpAT30 < Formula
     patch do
       url (@@urlResolver.patch_url "emacs-26.2-rc1-mac-7.5-no-title-bar"), using: CopyDownloadStrategy
       sha256 "8319fd9568037c170f5990f608fb5bd82cd27346d1d605a83ac47d5a82da6066"
+    end
+  end
+
+  if build.with? "transparent-titlebar"
+    patch do
+      url (@@urlResolver.patch_url "emacs-30-add-transparent-titlebar"), using: CopyDownloadStrategy
+      sha256 "28016179dbc2da4c8db814666917dc3d128bf3e84cd85fb7f4879c52d1e363a0"
     end
   end
 

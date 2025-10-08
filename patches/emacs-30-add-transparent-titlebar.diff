@@ -1,0 +1,509 @@
+From d0dc5eb13bfad9d812d8c3959f20d0496e001351 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Przemys=C5=82aw=20Kryger?= <pkryger@gmail.com>
+Date: Wed, 10 Sep 2025 12:46:47 +0100
+Subject: [PATCH] feat: Add transparent title bar
+
+The implementation mechanic is inspired by the one in NS (for
+`ns-transparent-titlebar').  However, a GUI thread is used to actually
+apply the value to a frame (window in macOS parlance).  This has a
+slight difference, where the value can be set in a model of a frame, but
+title bar transparency will not be rendered in the GUI.
+
+Also, when a frame (window in macOS) has a transparent title bar
+then native tab bar operations do not work (see #104).  As a
+workaround the title bar transparency is temporarily disabled
+when an affected operation is to take place.
+
+* doc/lispref/frames.texi: Comment out NS specific symbols
+`ns-appearance' and `ns-transparent-titlebar' and add
+`mac-transparent-titlebar'.
+* src/frame.c (make_frame): Initialize
+`mac_transparent_titlebar' member variable to false.
+(frame_parms): Add binding between `mac-transparent-titlebar`
+and `Qmac_transparent_titlebar'.
+(syms_of_frame): Define symbol `Qmac_transparent_titlebar'.
+* src/frame.h (frame): Add `mac_transparent_titlebar' member
+variable.
+* src/macappkit.m (+mac_with_suppressed_transparent_titlebar): A
+new function to temporarily disable transparent title bar for
+`window' (should it be enabled) while executing the `block'.
+When `assumeTransparent' is `YES' then assume the caller has
+already checked for transparency on `window' and proceed with
+disabling.
+(tabGroup): Override parent class (`NSWindow') implementation to
+double check for `tabGroup' when the window has transparent
+title bar.
+(setupWindow): Set window transparency on a newly created frame
+(window in macOS parlance): according to value of
+`mac_transparent_titlebar'.
+(mac_set_frame_window_transparent_titlebar): New function that
+delegates setting title bar transparency to GUI thread.
+(mac_set_tab_group_overview_visible_p): Temporarily disable
+title bar transparency when calling `toggleTabOverview'.
+(mac_set_tab_group_tab_bar_visible_p): Temporarily disable title
+bar transparency when calling `toggleTabBar'.
+* src/macfns.c (mac_set_transparent_titlebar): Handler that
+applies frame parameter `mac-transparent-titlebar'.
+(x-create-frame): Set frame parameter
+`mac-transparent-titlebar'.
+(mac_frame_parm_handlers): Register
+`mac_set_transparent_titlebar'.  Also add extra ifdefs to
+reflect the order of parameters defined in `frame_parms'.
+* src/macterm.h (FRAME_MAC_TRANSPARENT_TITLEBAR): New macro to
+access `mac_transparent_titlebar' member variable.
+(mac_set_frame_window_transparent_titlebar): Add declaration.
+* test/src/mac-transparent-titlebar-tab-bar-tests.el: Add tests focused
+on interaction between transparent title bar and native tab bar.
+
+fixes: #83
+fixes: #104
+---
+ doc/emacs/macport.texi                        |  14 ++
+ src/frame.c                                   |   9 ++
+ src/frame.h                                   |   3 +
+ src/macappkit.m                               |  87 ++++++++--
+ src/macfns.c                                  |  28 +++-
+ src/macterm.h                                 |   4 +
+ .../mac-transparent-titlebar-tab-bar-tests.el | 149 ++++++++++++++++++
+ 7 files changed, 284 insertions(+), 10 deletions(-)
+ create mode 100644 test/src/mac-transparent-titlebar-tab-bar-tests.el
+
+diff --git a/doc/emacs/macport.texi b/doc/emacs/macport.texi
+index 4dd9b24e582..40ba55d11fe 100644
+--- a/doc/emacs/macport.texi
++++ b/doc/emacs/macport.texi
+@@ -539,6 +539,20 @@ Mac Colors
+ @code{scroll-bar-background} frame parameter (or the frame background
+ color) if the frame is focused and not in fullscreen.
+ 
++@vindex mac-transparent-titlebar
++  The title bar transparency can be controlled by the value of the
++@code{mac-transparent-titlebar} frame parameter.  If it is @code{nil},
++which is the default then title bar uses system color for its
++background.  If it is non-@code{nil} then the frame background color is
++used instead.
++
++It is recommended that the theme applied on the frame with transparent
++title bar matches current macOS appearance.  That is, when macOS
++appearance is Light the theme should have a light colored background and
++a dark colored default face.  Likewise, when macOS appearance is Dark
++the theme should have a dark colored background and a light colored
++default face.
++
+ @node Mac Fullscreen
+ @section Fullscreen support on the Mac Port
+ @cindex fullscreen support (Mac port)
+diff --git a/src/frame.c b/src/frame.c
+index 86f80a1d92a..92d00b54b81 100644
+--- a/src/frame.c
++++ b/src/frame.c
+@@ -998,6 +998,9 @@ make_frame (bool mini_p)
+   f->ns_appearance = ns_appearance_system_default;
+   f->ns_transparent_titlebar = false;
+ #endif
++#ifdef HAVE_MACGUI
++  f->mac_transparent_titlebar = false;
++#endif
+ #endif
+   f->select_mini_window_flag = false;
+   /* This one should never be zero.  */
+@@ -4074,6 +4077,9 @@ DEFUN ("frame-scale-factor", Fframe_scale_factor, Sframe_scale_factor,
+   {"ns-appearance",		SYMBOL_INDEX (Qns_appearance)},
+   {"ns-transparent-titlebar",	SYMBOL_INDEX (Qns_transparent_titlebar)},
+ #endif
++#ifdef HAVE_MACGUI
++  {"mac-transparent-titlebar",  SYMBOL_INDEX (Qmac_transparent_titlebar)},
++#endif
+ };
+ 
+ #ifdef HAVE_WINDOW_SYSTEM
+@@ -6428,6 +6434,9 @@ syms_of_frame (void)
+   DEFSYM (Qns_appearance, "ns-appearance");
+   DEFSYM (Qns_transparent_titlebar, "ns-transparent-titlebar");
+ #endif
++#ifdef HAVE_MACGUI
++  DEFSYM (Qmac_transparent_titlebar, "mac-transparent-titlebar");
++#endif
+ 
+   DEFSYM (Qalpha, "alpha");
+   DEFSYM (Qalpha_background, "alpha-background");
+diff --git a/src/frame.h b/src/frame.h
+index 387c18827e0..3caa7de0267 100644
+--- a/src/frame.h
++++ b/src/frame.h
+@@ -745,6 +745,9 @@ #define EMACS_FRAME_H
+   enum ns_appearance_type ns_appearance;
+   bool_bf ns_transparent_titlebar;
+ #endif
++#ifdef HAVE_MACGUI
++  bool_bf mac_transparent_titlebar;
++#endif
+ 
+ #ifdef HAVE_TEXT_CONVERSION
+   /* Text conversion state used by certain input methods.  */
+diff --git a/src/macappkit.m b/src/macappkit.m
+index bdc8a04d25b..43550aef218 100644
+--- a/src/macappkit.m
++++ b/src/macappkit.m
+@@ -1996,6 +1996,24 @@ - (BOOL)doesHoldQuit
+ static void set_global_focus_view_frame (struct frame *);
+ static void unset_global_focus_view_frame (void);
+ static void mac_move_frame_window_structure_1 (struct frame *, int, int);
++static void
++mac_with_suppressed_transparent_titlebar( NSWindow* window, BOOL assumeTransparent, void (CF_NOESCAPE ^block) (void))
++{
++  BOOL isTransparent = assumeTransparent ||
++    ([window respondsToSelector:@selector(titlebarAppearsTransparent)] &&
++     [window titlebarAppearsTransparent]);
++  if (isTransparent)
++    [window setTitlebarAppearsTransparent:NO];
++  @try
++    {
++      block ();
++    }
++  @finally
++    {
++      if (isTransparent)
++	[window setTitlebarAppearsTransparent:YES];
++    }
++}
+ 
+ #define DEFAULT_NUM_COLS (80)
+ #define RESIZE_CONTROL_WIDTH (15)
+@@ -2355,6 +2373,32 @@ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+     return self;
+ }
+ 
++- (NSWindowTabGroup *)tabGroup
++{
++  __block NSWindowTabGroup *tg = [super tabGroup];
++  if (tg)
++    return tg;
++  /* On a newly created Emacs window, that has a transparent title bar
++     (e.g., as a result of (mac-transparent-titlebar . t) being present
++     in default-frame-alist, or when the transparency has been turned on
++     for a window before tabGroup has been called for the window) the
++     call to super class' -[NSWindow tabGroup] yields NULL.  The
++     workaround is to disable the transparency temporarily then call the
++     super class again.  Strangely enough, subsequent calls to
++     -[NSWindow tabGroup] (made from such a window with transparent
++     title bar) yield a proper NSWindowTabGroup object.  */
++  else if ([self respondsToSelector:@selector(titlebarAppearsTransparent)] &&
++	   [self titlebarAppearsTransparent])
++    {
++      mac_with_suppressed_transparent_titlebar (self, YES, ^{
++	  tg = [super tabGroup];
++	});
++      return tg;
++    }
++  else
++    return NULL;
++}
++
+ @end				// EmacsWindow
+ 
+ @implementation EmacsFrameController
+@@ -2640,6 +2684,11 @@ - (void)setupWindow
+ 	  && !FRAME_PARENT_FRAME (f))
+ 	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+       window.animationBehavior = NSWindowAnimationBehaviorDocumentWindow;
++      if ([window respondsToSelector:@selector(titlebarAppearsTransparent)])
++	{
++	  BOOL transparent = FRAME_MAC_TRANSPARENT_TITLEBAR(f) ? YES : NO;
++	  [window setTitlebarAppearsTransparent:transparent];
++	}
+     }
+   else
+     {
+@@ -4286,6 +4335,16 @@ - (void)windowDidExitTabOverview
+   mac_within_gui (^{[window setDocumentEdited:modified];});
+ }
+ 
++void
++mac_set_frame_window_transparent_titlebar (struct frame *f, bool transparent)
++{
++  NSWindow *window = FRAME_MAC_WINDOW_OBJECT (f);
++
++  mac_within_gui (^{
++      if ([window respondsToSelector: @selector(titlebarAppearsTransparent)])
++	[window setTitlebarAppearsTransparent:transparent ? YES : NO];});
++}
++
+ void
+ mac_set_frame_window_proxy (struct frame *f, CFURLRef url)
+ {
+@@ -4614,9 +4673,14 @@ - (void)windowDidExitTabOverview
+   mac_within_app (^{
+       if (window.tabGroup.isOverviewVisible != !NILP (value))
+ 	{
+-	  /* Just setting the property window.tabGroup.overviewVisible
+-	     does not show the search field on macOS 10.13 Beta.  */
+-	  [NSApp sendAction:@selector(toggleTabOverview:) to:window from:nil];
++	  /* Sending toggleTabOverview to window doesn't work when the
++	     window has a transparent title bar.  Suppress the
++	     transparency temporarily for the call.  */
++	  mac_with_suppressed_transparent_titlebar (window, NO, ^{
++	      /* Just setting the property window.tabGroup.overviewVisible
++		 does not show the search field on macOS 10.13 Beta.  */
++	      [NSApp sendAction:@selector(toggleTabOverview:) to:window from:nil];
++	    });
+ 	  result = Qt;
+ 	}
+     });
+@@ -4639,12 +4703,17 @@ - (void)windowDidExitTabOverview
+ 	result = build_string ("Tab bar cannot be made invisible because of multiple tabs");
+       else
+ 	{
+-	  [window exitTabGroupOverview];
+-	  [NSApp sendAction:@selector(toggleTabBar:) to:window from:nil];
+-	  [[NSUserDefaults standardUserDefaults]
+-	    removeObjectForKey:[@"NSWindowTabbingShoudShowTabBarKey-"
+-				   stringByAppendingString:window.tabbingIdentifier]];
+-	  result = Qt;
++	      [window exitTabGroupOverview];
++	      /* Sending toggleTabBar doesn't work when the window has a
++		 transparent title bar.  Suppress the transparency
++		 temporarily for the call.  */
++	      mac_with_suppressed_transparent_titlebar (window, NO, ^{
++		  [NSApp sendAction:@selector(toggleTabBar:) to:window from:nil];
++		});
++	      [[NSUserDefaults standardUserDefaults]
++		removeObjectForKey:[@"NSWindowTabbingShoudShowTabBarKey-"
++				       stringByAppendingString:window.tabbingIdentifier]];
++	      result = Qt;
+ 	}
+     });
+ 
+diff --git a/src/macfns.c b/src/macfns.c
+index 20bb66bbbbd..78e5747fee8 100644
+--- a/src/macfns.c
++++ b/src/macfns.c
+@@ -1215,6 +1215,20 @@ mac_set_override_redirect (struct frame *f, Lisp_Object new_value, Lisp_Object o
+     }
+ }
+ 
++static void
++mac_set_transparent_titlebar (struct frame *f, Lisp_Object new_value, Lisp_Object old_value)
++{
++  if (!EQ (new_value, old_value))
++    {
++      bool transparent = NILP (new_value) ? false : true;
++      FRAME_MAC_TRANSPARENT_TITLEBAR (f) = transparent;
++
++      block_input ();
++      mac_set_frame_window_transparent_titlebar (f, transparent);
++      unblock_input ();
++    }
++}
++
+ /* Functions called only from `gui_set_frame_parameters'
+    to set individual parameters.
+ 
+@@ -2530,6 +2544,12 @@ DEFUN ("x-create-frame", Fx_create_frame, Sx_create_frame,
+ 					  "scrollBarBackground",
+ 					  "ScrollBarBackground", false);
+ 
++  tem = gui_display_get_arg (dpyinfo, parms, Qmac_transparent_titlebar,
++			     NULL, NULL, RES_TYPE_BOOLEAN);
++  FRAME_MAC_TRANSPARENT_TITLEBAR (f) = !NILP (tem) && !EQ (tem, Qunbound);
++  store_frame_param (f, Qmac_transparent_titlebar,
++		     FRAME_MAC_TRANSPARENT_TITLEBAR (f) ? Qt : Qnil);
++
+   /* Init faces before gui_default_parameter is called for the
+      scroll-bar-width parameter because otherwise we end up in
+      init_iterator with a null face cache, which should not happen.  */
+@@ -5247,7 +5267,13 @@ DEFUN ("mac-start-animation", Fmac_start_animation, Smac_start_animation, 1, MAN
+   gui_set_no_special_glyphs,
+   gui_set_alpha_background,
+   NULL, /* mac_set_use_frame_synchronization */
+-  NULL, /* mac_set_shaded */
++  /* Skipping the following parameters from frame_parms that are not
++     compiled when HAVE_MACGUI is defined:
++     shaded
++     ns-appearance
++     ns-transparent-titlebar
++   */
++  mac_set_transparent_titlebar,
+ };
+ 
+ void
+diff --git a/src/macterm.h b/src/macterm.h
+index 12d7f62e91a..112bdcf3a37 100644
+--- a/src/macterm.h
++++ b/src/macterm.h
+@@ -339,6 +339,9 @@ #define FRAME_FLASH_RECTANGLES_DATA(f) \
+ #define FRAME_MAC_DOUBLE_BUFFERED_P(f) \
+   ((f)->output_data.mac->double_buffered_p)
+ 
++#define FRAME_MAC_TRANSPARENT_TITLEBAR(f) \
++  ((f)->mac_transparent_titlebar)
++
+ /* This gives the mac_display_info structure for the display F is on.  */
+ #define FRAME_DISPLAY_INFO(f) ((void) (f), (&one_mac_display_info))
+ 
+@@ -620,6 +623,7 @@ #define mac_display_pixel_width(dpyinfo)	((dpyinfo)->width)
+ extern Lisp_Object mac_application_state (void);
+ extern void mac_set_frame_window_title (struct frame *, CFStringRef);
+ extern void mac_set_frame_window_modified (struct frame *, bool);
++extern void mac_set_frame_window_transparent_titlebar (struct frame *, bool);
+ extern void mac_set_frame_window_proxy (struct frame *, CFURLRef);
+ extern bool mac_is_frame_window_visible (struct frame *);
+ extern bool mac_is_frame_window_collapsed (struct frame *);
+diff --git a/test/src/mac-transparent-titlebar-tab-bar-tests.el b/test/src/mac-transparent-titlebar-tab-bar-tests.el
+new file mode 100644
+index 00000000000..37d5902fd0a
+--- /dev/null
++++ b/test/src/mac-transparent-titlebar-tab-bar-tests.el
+@@ -0,0 +1,149 @@
++;;; mac-transparent-titlebar-tab-bar-tests.el --- Tests for interactions between tranparent title bar and native tab-bar -*- lexical-binding:t -*-
++
++;;; Commentary:
++;;
++;; This tests are designed to run with a visible frame (a GUI window),
++;; as they verify native macOS tab-bar functionality while
++;; `mac-transparent-titlebar' is enabled.  As such there's not
++;; implemeted as ert style tests per se, i.e. not a series of
++;; `deftest's, but rather this file should be evaled as a script, e.g.,
++;;
++;;   emacs -Q -load mac-transparent-titlebar-tab-bar-tests.el
++
++;;; Code:
++
++(require 'ert)
++
++(setq debug-on-error t)
++
++(defvar frame-stack nil)
++
++;; (0) Enable transparency on current frame and all new frames
++(set-frame-parameter nil 'mac-transparent-titlebar t)
++(add-to-list 'default-frame-alist '(mac-transparent-titlebar . t))
++
++;; (1) Test the initial frame
++(push (should
++       (mac-frame-tab-group-property nil :selected-frame))
++      frame-stack)
++(should (frame-parameter nil 'mac-transparent-titlebar))
++(should (eql 1
++             (length (mac-frame-tab-group-property nil :frames))))
++(should-not (mac-frame-tab-group-property nil :tab-bar-visible-p))
++(should-not (mac-frame-tab-group-property nil :overview-visible-p))
++
++;; toggle tab-bar on and off
++(mac-set-frame-tab-group-property nil :tab-bar-visible-p t)
++(should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++(mac-set-frame-tab-group-property nil :tab-bar-visible-p nil)
++(should-not (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++;; TODO: need to find a way to exit overview programatically
++;; ;; toggle overview on and off
++;; (mac-set-frame-tab-group-property nil :tab-bar-visible-p t)
++;; (should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++;; (should
++;;  (progn
++;;    (mac-set-frame-tab-group-property nil :overview-visible-p t)
++;;    (mac-frame-tab-group-property nil :overview-visible-p)))
++;; ;; when one tab is present tab-bar is hidden after exiting overview
++;; (should-not (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++;; (2) Open a new frame in a new tab and test it
++(mac-set-frame-tab-group-property nil :tab-bar-visible-p t)
++(should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++(sleep-for 1)
++(mac-handle-new-window-for-tab nil)
++(sleep-for 1)
++
++(push (should
++       (mac-frame-tab-group-property nil :selected-frame))
++      frame-stack)
++;; the :selecte-frame is a truly unique frame
++(should-not (equal (car frame-stack) (cadr frame-stack)))
++(let ((frames (mac-frame-tab-group-property nil :frames)))
++  (should (eql 2 (length frames)))
++  (should (member (car frame-stack) frames))
++  (should (member (cadr frame-stack) frames)))
++
++(should (frame-parameter nil 'mac-transparent-titlebar))
++(should-not (mac-frame-tab-group-property nil :overview-visible-p))
++
++;; tab-bar cannot be swiched off when there's more than one tab
++(should-error (mac-set-frame-tab-group-property nil :tab-bar-visible-p nil))
++(should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++;; TODO: need to find a way to exit overview programatically
++;; ;; toggle overview on and off
++;; (should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++;; (should-not (mac-frame-tab-group-property nil :overview-visible-p))
++;; (should
++;;  (progn
++;;    (mac-set-frame-tab-group-property nil :overview-visible-p t)
++;;    (mac-frame-tab-group-property nil :overview-visible-p)))
++;; ;; tab-bar is visible after exiting overview when there's more than one tab-bar
++;; (should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++
++;; select previously selected frame
++(mac-set-frame-tab-group-property nil :selected-frame (cadr frame-stack))
++(should (equal (cadr frame-stack)
++               (mac-frame-tab-group-property nil :selected-frame)))
++
++;; (3) Open a new frame in a new window and test it
++(let ((f (make-frame)))
++  (select-frame f))
++
++(push (should
++       (mac-frame-tab-group-property nil :selected-frame))
++      frame-stack)
++;; the :selecte-frame is a truly unique frame
++(should (eql 3 (length frame-stack)))
++(should-not (equal (car frame-stack) (cadr frame-stack)))
++(should-not (equal (car frame-stack) (caddr frame-stack)))
++
++(let ((frames (mac-frame-tab-group-property nil :frames)))
++  (should (eql 1 (length frames)))
++  (should (member (car frame-stack) frames)))
++
++(should (frame-parameter nil 'mac-transparent-titlebar))
++(should-not (mac-frame-tab-group-property nil :overview-visible-p))
++(should-not (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++;; toggle tab-bar on and off
++(mac-set-frame-tab-group-property nil :tab-bar-visible-p t)
++(should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++(mac-set-frame-tab-group-property nil :tab-bar-visible-p nil)
++(should-not (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++;; (4) Transfer one frame from the first window to the newly opened window
++(mac-set-frame-tab-group-property
++ nil :frames
++ (list (car frame-stack)
++       (cadr frame-stack)))
++
++(let ((frames (mac-frame-tab-group-property nil :frames)))
++  (should (eql 2 (length frames)))
++  (should (member (car frame-stack) frames))
++  (should (member (cadr frame-stack) frames)))
++(should (mac-frame-tab-group-property nil :tab-bar-visible-p))
++
++(let* ((f (caddr frame-stack))
++       (frames (mac-frame-tab-group-property f :frames)))
++  (should (eql 1 (length frames)))
++  (should (member f frames))
++  (should-not (mac-frame-tab-group-property f :tab-bar-visible-p)))
++
++
++;; (5) Test the overview visible
++(should
++ (progn
++   (mac-set-frame-tab-group-property nil :overview-visible-p t)
++   (mac-frame-tab-group-property nil :overview-visible-p)))
++
++;; All done - test pass!
++(kill-emacs 0)
++
++(provide 'mac-transparent-titlebar-tab-bar-tests)
++
++;;; mac-transparent-titlebar-tab-bar-tests.el ends here
+-- 
+2.51.0
+
