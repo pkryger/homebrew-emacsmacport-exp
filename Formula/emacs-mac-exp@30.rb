@@ -27,7 +27,6 @@ class EmacsMacExpAT30 < Formula
   option "with-mac-metal", "use Metal framework in application-side double buffering (experimental)"
   option "with-xwidgets", "Build with xwidgets"
   option "with-unlimited-select", "Builds with unlimited select, which increases emacs's open file limit to 10000"
-  option "with-debug-flags", "Builds with gcc (llvm) debug flags, suitable for debugging with lldb"
   option "with-optimization-flags", "Builds with gcc (llvm) optimization flags"
   option "without-native-compilation", "Build without native compilation"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
@@ -144,10 +143,6 @@ class EmacsMacExpAT30 < Formula
       ENV.append_to_cflags "-D_DARWIN_UNLIMITED_SELECT"
     end
 
-    if build.with? "debug-flags"
-      ENV.O0 unless build.with? "optimization-flags"
-      ENV.set_debug_symbols
-    end
     if build.with? "optimization-flags"
       ENV.O3
       ENV.runtime_cpu_detection
