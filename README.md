@@ -12,9 +12,9 @@ This Homebrew tap allows for a build of experimental Emacs Mac port from https:/
 
 1. If you have the `emacs-mac` installed from the original tap it is recommended to unlink (or even uninstall) it first, for example., `brew unlink emacs-mac`.
 2. Tap this repository: `brew tap pkryger/emacsmacport-exp`.
-3. Build and install the formula from `HEAD`, for example `brew install emacs-mac-exp --HEAD --with-optimalization-flags --with-natural-title-bar --with-xwidgets`. If you have chosen to skip unlink/uninstall of `emacs-mac` add `--skip-link`, for example `brew install --skip-link emacs-mac-exp --HEAD ...`.
+3. Build and install the formula from `HEAD`, for example `brew install --HEAD emacs-mac-exp --with-optimalization-flags --with-transparent-tiltebar --with-arc`. If you have chosen to skip unlink/uninstall of `emacs-mac` add `--skip-link`, for example `brew install --skip-link --HEAD emacs-mac-exp ...`. If you are interested in a debug build, and use Homebrew provided clang (optional, but it enables support for non-escaping blocks in Objective-C code), you can install with `brew install --HEAD --cc llvm_clang --build-from-source --debug-symbols emacs-mac-exp ...`.
 4. Please note that this formula installs all artefacts to `${HOMEBREW_PREFIX}/opt/emacs-mac-exp`, so your starting method may require updating the new location (i.e., `/Applications/Emacs.app` link, shell script).
-5. If you wish to experiment, you can try to install Emacs Mac 31 `emacs-mac-exp@31` with `brew intsal --skip-link eamcs-mac-exp@31`.
+5. If you wish to experiment, you can try to install Emacs Mac 31 `emacs-mac-exp@31` with `brew install --skip-link --HEAD emacs-mac-exp@31`.
 
 # Original README.md from Emacs Mac Port
 
