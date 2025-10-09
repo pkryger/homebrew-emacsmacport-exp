@@ -11,7 +11,7 @@ class EmacsMacExpAT31 < Formula
     url "https://github.com/jdtsmith/emacs-mac.git",
         **(
           if ENV["HOMEBREW_EMACS_MAC_31_REVISION"]
-            { revision: ENV["HOMEBREW_EMACS_MAC_30_REVISION"] }
+            { revision: ENV["HOMEBREW_EMACS_MAC_31_REVISION"] }
           else
             { branch: "emacs-mac-gnu_master_exp" }
           end
