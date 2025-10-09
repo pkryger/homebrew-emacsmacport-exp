@@ -119,7 +119,7 @@ class EmacsMacExpAT31 < Formula
 
     if build.with? "unlimited-select"
       ENV.append_to_cflags "-DFD_SETSIZE=10000"
-      # ENV.append_to_cflags "-D_DARWIN_UNLIMITED_SELECT"
+      ENV.append_to_cflags "-D_DARWIN_UNLIMITED_SELECT"
     end
 
     if build.with? "optimization-flags"
