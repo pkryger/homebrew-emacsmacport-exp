@@ -25,6 +25,7 @@ jobs:
       matrix:
         os:
           - macos-15
+          - macos-26
         build_opts:
           - ""
           - "--with-transparent-titlebar"
