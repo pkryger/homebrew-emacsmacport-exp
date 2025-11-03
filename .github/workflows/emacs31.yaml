@@ -27,11 +27,11 @@ jobs:
           - macos-15
         build_opts:
           - ""
-          - "--with-natural-title-bar"
           - "--with-starter"
           - "--with-optimization-flags"
-          - "--with-debug-flags"
+          - "--debug-symbols --build-from-source"
           - "--with-arc"
+          - "--with-mac-metal"
           - "--cc llvm_clang"
           - "--without-native-compilation"
     env:
@@ -72,7 +72,12 @@ jobs:
         run: brew install llvm
 
       - name: Build Emacs
-        run: brew install --formula ./Formula/emacs-mac-exp@31.rb --HEAD ${{ matrix.build_opts }} --verbose
+        run: |
+          tap=$(brew --prefix)/Library/Taps/pkryger/homebrew-emacsmacport-exp
+          mkdir -p "$(dirname "${tap}")"
+          ln -s "${GITHUB_WORKSPACE}" "${tap}"
+          brew install pkryger/emacsmacport-exp/emacs-mac-exp@31 --HEAD ${{ matrix.build_opts }} --verbose
+          rm "${tap}"
 
       - name: Test Building
         run: "\"$(brew --prefix)/bin/emacs\" --batch --eval='(print (+ 2 2))'"

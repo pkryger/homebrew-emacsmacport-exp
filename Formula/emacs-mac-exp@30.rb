@@ -143,6 +143,12 @@ class EmacsMacExpAT30 < Formula
       ENV.append_to_cflags "-D_DARWIN_UNLIMITED_SELECT"
     end
 
+    if ENV.fetch("HOMEBREW_CCCFG", "").include?("D")
+      inreplace "lisp/emacs-lisp/comp.el",
+                /^\(defcustom native-comp-compiler-options nil/,
+                "(defcustom native-comp-compiler-options '(\"-g\")"
+    end
+
     if build.with? "optimization-flags"
       ENV.O3
       ENV.runtime_cpu_detection
