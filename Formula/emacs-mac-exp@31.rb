@@ -41,7 +41,6 @@ class EmacsMacExpAT31 < Formula
   depends_on "libgccjit" if build.with? "native-compilation"
   depends_on "pkg-config"
   depends_on "texinfo"
-  depends_on "jansson" => :recommended
   depends_on "librsvg" => :recommended
   depends_on "libxml2" => :recommended
   depends_on "tree-sitter" => :recommended
