@@ -28,6 +28,7 @@ class EmacsMacExpAT31 < Formula
   option "with-optimization-flags", "Builds with gcc (llvm) optimization flags"
   option "without-native-compilation", "Build without native compilation"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
+  option "without-support-tree-sitter-version-0.26-and-later", "Built without support for Tree Sitter 0.26 and later"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -43,7 +44,8 @@ class EmacsMacExpAT31 < Formula
   depends_on "texinfo"
   depends_on "librsvg" => :recommended
   depends_on "libxml2" => :recommended
-  depends_on "tree-sitter" => :recommended
+  depends_on "tree-sitter" => :recommended if build.with? "support-tree-sitter-version-0.26-and-later"
+  depends_on "tree-sitter@0.25" => :recommended if build.without? "support-tree-sitter-version-0.26-and-later"
   depends_on "dbus" => :optional
   depends_on "glib" => :optional
   depends_on "imagemagick" => :optional
@@ -59,6 +61,13 @@ class EmacsMacExpAT31 < Formula
   patch do
     url (@@urlResolver.patch_url "prefer-typo-ascender-descender-linegap"), using: CopyDownloadStrategy
     sha256 "318395d3869d3479da4593360bcb11a5df08b494b995287074d0d744ec562c17"
+  end
+
+  if build.with? "support-tree-sitter-version-0.26-and-later"
+    patch do
+      url (@@urlResolver.patch_url "support-tree-sitter-version-0.26-and-later"), using: CopyDownloadStrategy
+      sha256 "ba5fc0abda51a532b18c2ad6c401f5f7fced9dcaf6eee40a06132705797f2066"
+    end
   end
 
   # icons

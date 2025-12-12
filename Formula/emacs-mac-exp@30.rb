@@ -30,6 +30,7 @@ class EmacsMacExpAT30 < Formula
   option "with-optimization-flags", "Builds with gcc (llvm) optimization flags"
   option "without-native-compilation", "Build without native compilation"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
+  option "without-support-tree-sitter-version-0.26-and-later", "Built without support for Tree Sitter 0.26 and later"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -46,7 +47,8 @@ class EmacsMacExpAT30 < Formula
   depends_on "texinfo"
   depends_on "librsvg" => :recommended
   depends_on "libxml2" => :recommended
-  depends_on "tree-sitter" => :recommended
+  depends_on "tree-sitter" => :recommended if build.with? "support-tree-sitter-version-0.26-and-later"
+  depends_on "tree-sitter@0.25" => :recommended if build.without? "support-tree-sitter-version-0.26-and-later"
   depends_on "dbus" => :optional
   depends_on "glib" => :optional
   depends_on "imagemagick" => :optional
@@ -57,6 +59,13 @@ class EmacsMacExpAT30 < Formula
     # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
     url (@@urlResolver.patch_url "emacs-mac-29.2-rc-1-multi-tty"), using: CopyDownloadStrategy
     sha256 "4ede698c8f8f5509e3abf4e6a9c73e1dc3909b0f52f52ad4c33068bfaed3d1e4"
+  end
+
+  if build.with? "support-tree-sitter-version-0.26-and-later"
+    patch do
+      url (@@urlResolver.patch_url "emacs-30-support-tree-sitter-version-0.26-and-later"), using: CopyDownloadStrategy
+      sha256 "b3a271ffc326ebcd1caea18a688dbdfa4072478a5b25e73cdcd828aa66485bf2"
+    end
   end
 
   patch do
