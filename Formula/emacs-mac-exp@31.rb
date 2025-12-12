@@ -29,7 +29,6 @@ class EmacsMacExpAT31 < Formula
   option "without-native-compilation", "Build without native compilation"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
   option "without-support-tree-sitter-version-0.26-and-later", "Built without support for Tree Sitter 0.26 and later"
-  option "without-temporary-fix-for-package-vc", "Build without temporary package-vc patch"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -68,13 +67,6 @@ class EmacsMacExpAT31 < Formula
     patch do
       url (@@urlResolver.patch_url "support-tree-sitter-version-0.26-and-later"), using: CopyDownloadStrategy
       sha256 "ba5fc0abda51a532b18c2ad6c401f5f7fced9dcaf6eee40a06132705797f2066"
-    end
-  end
-
-  if build.with? "temporary-fix-for-package-vc"
-    patch do
-      url (@@urlResolver.patch_url "temporary-fix-for-package-vc"), using: CopyDownloadStrategy
-      sha256 "af01a6553d9faf0ac86c7da628d9e80bafda3a8a940ea31544dac5f9950f5623"
     end
   end
 
