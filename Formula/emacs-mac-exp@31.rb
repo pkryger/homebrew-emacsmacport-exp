@@ -28,6 +28,7 @@ class EmacsMacExpAT31 < Formula
   option "with-optimization-flags", "Builds with gcc (llvm) optimization flags"
   option "without-native-compilation", "Build without native compilation"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
+  option "without-underline-styles", "Build without support for all underline styles"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -49,9 +50,11 @@ class EmacsMacExpAT31 < Formula
   depends_on "glib" => :optional
   depends_on "imagemagick" => :optional
 
-  patch do
-    url (@@urlResolver.patch_url "emacs-mac-30-support-all-underline-styles"), using: CopyDownloadStrategy
-    sha256 "76eaef76612bea835d1cb580377bdc1effecec78c3a87a19ae564ae2ae51e907"
+  if build.with? "underline-styles"
+    patch do
+      url (@@urlResolver.patch_url "emacs-mac-30-support-all-underline-styles"), using: CopyDownloadStrategy
+      sha256 "76eaef76612bea835d1cb580377bdc1effecec78c3a87a19ae564ae2ae51e907"
+    end
   end
 
   patch do
