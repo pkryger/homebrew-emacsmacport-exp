@@ -50,6 +50,11 @@ class EmacsMacExpAT31 < Formula
   depends_on "imagemagick" => :optional
 
   patch do
+    url (@@urlResolver.patch_url "emacs-mac-30-support-all-underline-styles"), using: CopyDownloadStrategy
+    sha256 "76eaef76612bea835d1cb580377bdc1effecec78c3a87a19ae564ae2ae51e907"
+  end
+
+  patch do
     # patch for multi-tty support, see the following links for details
     # https://bitbucket.org/mituharu/emacs-mac/pull-requests/2/add-multi-tty-support-to-be-on-par-with/diff
     # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
