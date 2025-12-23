@@ -44,8 +44,7 @@ class EmacsMacExpAT31 < Formula
   depends_on "texinfo"
   depends_on "librsvg" => :recommended
   depends_on "libxml2" => :recommended
-  depends_on "tree-sitter" => :recommended if build.with? "support-tree-sitter-version-0.26-and-later"
-  depends_on "tree-sitter@0.25" => :recommended if build.without? "support-tree-sitter-version-0.26-and-later"
+  depends_on "tree-sitter" => :recommended
   depends_on "dbus" => :optional
   depends_on "glib" => :optional
   depends_on "imagemagick" => :optional
