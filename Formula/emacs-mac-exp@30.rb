@@ -201,7 +201,7 @@ class EmacsMacExpAT30 < Formula
      [share/"emacs/#{emacs_version}/etc", contents_dir/"Resources"],
      [share/"info", contents_dir/"Resources"],
      [share/"man", contents_dir/"Resources"]].map do |source, target|
-      target.install_symlink source if !File.exist? target/File.basename(source) and File.exist? source
+      target.install_symlink source if (!File.exist? target/File.basename(source)) && (File.exist? source)
     end
 
     # Follow Homebrew and don't install ctags from Emacs. This allows Vim
