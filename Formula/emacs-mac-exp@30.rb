@@ -5,7 +5,10 @@ class EmacsMacExpAT30 < Formula
   desc "YAMAMOTO Mitsuharu's Mac port of GNU Emacs - jdtsmith experimental"
   homepage "https://www.gnu.org/software/emacs/"
 
-  @@urlResolver = UrlResolver.new(ENV["HOMEBREW_EMACS_MAC_MODE"] || "remote")
+  @url_resolver = UrlResolver.new(ENV["HOMEBREW_EMACS_MAC_MODE"] || "remote")
+  class << self
+    attr_accessor :url_resolver
+  end
 
   head do
     url "https://github.com/jdtsmith/emacs-mac.git",
@@ -54,7 +57,8 @@ class EmacsMacExpAT30 < Formula
 
   if build.with? "underline-styles"
     patch do
-      url (@@urlResolver.patch_url "emacs-mac-30-support-all-underline-styles"), using: CopyDownloadStrategy
+      url (EmacsMacExpAT30.url_resolver.patch_url "emacs-mac-30-support-all-underline-styles"),
+          using: CopyDownloadStrategy
       sha256 "76eaef76612bea835d1cb580377bdc1effecec78c3a87a19ae564ae2ae51e907"
     end
   end
@@ -63,29 +67,31 @@ class EmacsMacExpAT30 < Formula
     # patch for multi-tty support, see the following links for details
     # https://bitbucket.org/mituharu/emacs-mac/pull-requests/2/add-multi-tty-support-to-be-on-par-with/diff
     # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
-    url (@@urlResolver.patch_url "emacs-mac-29.2-rc-1-multi-tty"), using: CopyDownloadStrategy
+    url (EmacsMacExpAT30.url_resolver.patch_url "emacs-mac-29.2-rc-1-multi-tty"), using: CopyDownloadStrategy
     sha256 "4ede698c8f8f5509e3abf4e6a9c73e1dc3909b0f52f52ad4c33068bfaed3d1e4"
   end
 
   if build.with? "tree-sitter"
     patch do
-      url (@@urlResolver.patch_url "emacs-30-support-tree-sitter-version-0.26-and-later"), using: CopyDownloadStrategy
+      url (EmacsMacExpAT30.url_resolver.patch_url "emacs-30-support-tree-sitter-version-0.26-and-later"),
+          using: CopyDownloadStrategy
       sha256 "b170903d9723fcbf7787fc6d752de58d5d26a7dee9c007a9b1b7a32ccde0453c"
     end
   end
 
   patch do
-    url (@@urlResolver.patch_url "prefer-typo-ascender-descender-linegap"), using: CopyDownloadStrategy
+    url (EmacsMacExpAT30.url_resolver.patch_url "prefer-typo-ascender-descender-linegap"), using: CopyDownloadStrategy
     sha256 "318395d3869d3479da4593360bcb11a5df08b494b995287074d0d744ec562c17"
   end
 
   patch do
-    url (@@urlResolver.patch_url "emacs-30-inhibit-lexical-cookie-warning-67916"), using: CopyDownloadStrategy
+    url (EmacsMacExpAT30.url_resolver.patch_url "emacs-30-inhibit-lexical-cookie-warning-67916"),
+        using: CopyDownloadStrategy
     sha256 "5a37a127071db0a500281d13f7feae624ed6a93a2f66a73b565d7d39bdca0a16"
   end
 
   patch do
-    url (@@urlResolver.patch_url "emacs-29-make-file-notify-call-handler-more-robust-78712"),
+    url (EmacsMacExpAT30.url_resolver.patch_url "emacs-29-make-file-notify-call-handler-more-robust-78712"),
         using: CopyDownloadStrategy
     sha256 "496c5c058286aea8e13328d1e19425b958dff839a137d14ea2e74c3cf8d66351"
   end
@@ -96,7 +102,7 @@ class EmacsMacExpAT30 < Formula
     next if build.without? icon
 
     resource icon do
-      url (@@urlResolver.icon_url icon), using: CopyDownloadStrategy
+      url (EmacsMacExpAT30.url_resolver.icon_url icon), using: CopyDownloadStrategy
       sha256 iconsha
     end
   end
@@ -104,14 +110,14 @@ class EmacsMacExpAT30 < Formula
   if build.with? "no-title-bars"
     # odie "--with-no-title-bars patch not supported on --HEAD" if build.head?
     patch do
-      url (@@urlResolver.patch_url "emacs-26.2-rc1-mac-7.5-no-title-bar"), using: CopyDownloadStrategy
+      url (EmacsMacExpAT30.url_resolver.patch_url "emacs-26.2-rc1-mac-7.5-no-title-bar"), using: CopyDownloadStrategy
       sha256 "8319fd9568037c170f5990f608fb5bd82cd27346d1d605a83ac47d5a82da6066"
     end
   end
 
   if build.with? "transparent-titlebar"
     patch do
-      url (@@urlResolver.patch_url "emacs-30-add-transparent-titlebar"), using: CopyDownloadStrategy
+      url (EmacsMacExpAT30.url_resolver.patch_url "emacs-30-add-transparent-titlebar"), using: CopyDownloadStrategy
       sha256 "28016179dbc2da4c8db814666917dc3d128bf3e84cd85fb7f4879c52d1e363a0"
     end
   end
