@@ -11,14 +11,12 @@ class EmacsMacExpAT30 < Formula
   end
 
   head do
-    url "https://github.com/jdtsmith/emacs-mac.git",
-        **(
-          if ENV["HOMEBREW_EMACS_MAC_30_REVISION"]
-            { revision: ENV["HOMEBREW_EMACS_MAC_30_REVISION"] }
-          else
-            { branch: "emacs-mac-30_1_exp" }
-          end
-        )
+    revision_or_branch = if ENV["HOMEBREW_EMACS_MAC_30_REVISION"]
+      { revision: ENV["HOMEBREW_EMACS_MAC_30_REVISION"] }
+    else
+      { branch: "emacs-mac-30_1_exp" }
+    end
+    url "https://github.com/jdtsmith/emacs-mac.git", ** revision_or_branch
   end
   option "without-modules", "Build without dynamic modules support"
   option "with-ctags", "Don't remove the ctags executable that emacs provides"
