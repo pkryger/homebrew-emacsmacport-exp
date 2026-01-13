@@ -36,11 +36,13 @@ class EmacsMacExpAT31 < Formula
   deprecated_option "icon-official" => "with-official-icon"
   deprecated_option "icon-modern" => "with-modern-icon"
 
-  depends_on "gcc" => :build if build.with? "native-compilation"
-  depends_on "autoconf"
-  depends_on "automake"
+  unless build.without? "native-compilation"
+    depends_on "gcc" => :build
+    depends_on "libgccjit"
+  end
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
   depends_on "gnutls"
-  depends_on "libgccjit" if build.with? "native-compilation"
   depends_on "pkg-config"
   depends_on "texinfo"
   depends_on "librsvg" => :recommended
