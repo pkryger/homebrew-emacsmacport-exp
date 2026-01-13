@@ -92,7 +92,7 @@ class EmacsMacExpAT31 < Formula
     end
   end
 
-  def get_emacs_version
+  def parse_emacs_version
     ac_init_match=`m4 #{buildpath}/configure.ac`.match(/AC_INIT\(([^)]+)\)/)
     version_arg=ac_init_match ? ac_init_match[1].split(",")[1] : nil
     version_match=version_arg ? version_arg.match(/([0-9.]+)/) : nil
@@ -164,7 +164,7 @@ class EmacsMacExpAT31 < Formula
 
     # Create symlinks in Emacs.app. This needs to happen before installing starter, as the latter requires native-lisp
     # directory in Emacs.app in order to call `emacs --version`.
-    emacs_version = get_emacs_version
+    emacs_version = parse_emacs_version
     contents_dir = prefix/"Emacs.app/Contents"
     [[lib/"emacs/#{emacs_version}/native-lisp", contents_dir],
      [share/"emacs/#{emacs_version}/lisp", contents_dir/"Resources"],
