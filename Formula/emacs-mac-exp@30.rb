@@ -32,6 +32,8 @@ class EmacsMacExpAT30 < Formula
   option "without-native-compilation", "Build without native compilation"
   option "with-arc", "Build with Objective-C Automated Reference Counting (ARC)"
   option "without-underline-styles", "Build without support for all underline styles"
+  option "without-swallow-exceptions-from-events-forwarded-to-nsapp",
+         "Build without patch to swallow exceptions from events forwarded to NSApp"
 
   deprecated_option "with-native-comp" => "with-native-compilation"
   deprecated_option "without-native-comp" => "without-native-compilation"
@@ -60,6 +62,14 @@ class EmacsMacExpAT30 < Formula
       url (EmacsMacExpAT30.url_resolver.patch_url "emacs-mac-30-support-all-underline-styles"),
           using: CopyDownloadStrategy
       sha256 "76eaef76612bea835d1cb580377bdc1effecec78c3a87a19ae564ae2ae51e907"
+    end
+  end
+
+  if build.with? "swallow-exceptions-from-events-forwarded-to-nsapp"
+    patch do
+      url (EmacsMacExpAT30.url_resolver.patch_url "emacs-30-Swallow-exceptions-from-events-forwarded-to-NSApp"),
+          using: CopyDownloadStrategy
+      sha256 "6aa70e1c83bd9784197edd1fd9efc1eb0976c230da3b5ca1a4d487feca91f1f6"
     end
   end
 

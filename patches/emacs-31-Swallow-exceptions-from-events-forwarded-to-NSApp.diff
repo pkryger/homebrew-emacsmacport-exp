@@ -1,0 +1,32 @@
+From b4031b71afeb48bccb5e4f695fa3e23d4ffaa141 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Przemys=C5=82aw=20Kryger?= <pkryger@gmail.com>
+Date: Tue, 27 Jan 2026 15:50:43 +0000
+Subject: [PATCH] Swallow exceptions from events forwarded to NSApp
+
+* src/macappkit.m: ([EmacsController handleOneNSEvent:]):
+Add try/catch block.
+---
+ src/macappkit.m | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/macappkit.m b/src/macappkit.m
+index 08642ab11d9..2c2c7f9b429 100644
+--- a/src/macappkit.m
++++ b/src/macappkit.m
+@@ -1543,7 +1543,12 @@ - (void)handleOneNSEvent:(NSEvent *)event
+ 
+     default:
+     OTHER:
+-      [NSApp sendEvent:event];
++      @try
++        {
++          [NSApp sendEvent:event];
++        }
++      @catch (NSException *exception)
++        {}
+       break;
+     }
+ 
+-- 
+2.52.0
+
