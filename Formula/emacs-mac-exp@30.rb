@@ -231,9 +231,7 @@ class EmacsMacExpAT30 < Formula
         exec #{prefix}/Emacs.app/Contents/MacOS/Emacs.sh "$@"
       EOS
     end
-  end
 
-  def post_install
     (info/"dir").delete if (info/"dir").exist?
     info.glob("*.info{,.gz}") do |f|
       quiet_system Formula["texinfo"].bin/"install-info", "--quiet", "--info-dir=#{info}", f
