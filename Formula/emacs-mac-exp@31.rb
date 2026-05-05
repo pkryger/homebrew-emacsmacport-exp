@@ -75,7 +75,7 @@ class EmacsMacExpAT31 < Formula
     # https://bitbucket.org/mituharu/emacs-mac/pull-requests/2/add-multi-tty-support-to-be-on-par-with/diff
     # https://ylluminarious.github.io/2019/05/23/how-to-fix-the-emacs-mac-port-for-multi-tty-access/
     url (EmacsMacExpAT31.url_resolver.patch_url "emacs-mac-31.1-multi-tty"), using: CopyDownloadStrategy
-    sha256 "a634ab85416af9de59517e6ea9743698075d34449624e90f3ce29f80d8865445"
+    sha256 "d8f984ec2f9e7f94821155e729472031dd89f07612fffa23bc8cfde0b1bf9ad6"
   end
 
   patch do

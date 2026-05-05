@@ -24,7 +24,7 @@ index 67a6e2ac079..22ed326381e 100644
 -      && sf->output_method != output_initial
 -#endif
 -      )
-+#ifdef defined WINDOWSNT /* This should work now! */
++#ifdef WINDOWSNT /* This should work now! */
 +  if (!FRAME_TERMCAP_P (sf))
      error ("Not using an ASCII terminal now; cannot make a new ASCII frame");
  #endif
@@ -46,7 +46,7 @@ index 087b38c0674..452d0be6e75 100644
      }
  
 -  if (f1)
-+  if (f1 && sf->output_method != output_termcap)
++  if (f1 && !FRAME_TERMCAP_P (f1))
      {
        /* Ok, we found a frame.  Store all the values.
  	 last_mouse_glyph is a rectangle used to reduce the generation
